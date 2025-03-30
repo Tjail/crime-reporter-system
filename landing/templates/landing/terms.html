@@ -1,0 +1,35 @@
+{% extends 'landing/base.html' %}
+{% block content %}
+<div class="container my-5">
+
+  <div class="row mt-3">
+    <div class="col-auto">
+      <a href="{% url 'home' %}" class="btn btn-outline-dark btn-sm"><i class="bi bi-house-door"></i> Home</a>
+    </div>
+    <div class="col-auto">
+      <a href="{% url 'post_list' %}" class="btn btn-dark btn-sm"><i class="bi bi-arrow-left-circle"></i> Feed</a>
+    </div>
+  </div>
+
+  <h2>Terms and Conditions</h2>
+
+  <p><strong>1. Purpose:</strong> This platform exists solely for reporting legitimate crimes, fraud, scams, and other unlawful or unethical activities. Its goal is to assist victims, raise awareness, and aid authorities in investigations.</p>
+
+  <p><strong>2. Responsible Use:</strong> By using this platform, you agree not to submit any false, exaggerated, or malicious reports. This includes, but is not limited to:</p>
+  <ul>
+    <li>Reporting someone out of personal vendetta (e.g. cheating partner, noisy neighbor).</li>
+    <li>Submissions made as a joke, for trolling, or to harass others.</li>
+    <li>Posting intentionally misleading, defamatory, or harmful information.</li>
+  </ul>
+
+  <p><strong>3. Consequences of Misuse:</strong> Users found violating these terms may face account suspension, permanent bans, and potential legal action. IP addresses and device metadata may be logged in cases of abuse.</p>
+
+  <p><strong>4. Legal Liability:</strong> You are fully responsible for the accuracy of the information you submit. The platform and its owners are not liable for any consequences resulting from false or inaccurate information submitted by users.</p>
+
+  <p><strong>5. Law Enforcement Cooperation:</strong> We reserve the right to share your submitted report and account information with relevant legal authorities for investigation or prosecution of crimes.</p>
+
+  <p><strong>6. Updates:</strong> These terms may be updated from time to time. Continued use of the platform constitutes acceptance of the most current terms.</p>
+
+  <p class="mt-4">By submitting a report, you confirm that you understand and accept these Terms and Conditions.</p>
+</div>
+{% endblock %}

@@ -1,0 +1,78 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{% block head_title %}{% endblock head_title %}</title>
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+        <style>
+            body {
+                background-color: #f8f9fa;
+            }
+            .auth-container {
+                max-width: 500px;
+                margin: 50px auto;
+                padding: 30px;
+                background: white;
+                border-radius: 10px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }
+        </style>
+
+        {% block extra_head %}{% endblock extra_head %}
+    </head>
+    <body class="d-flex align-items-center justify-content-center vh-100">
+        <div class="auth-container">
+            {% block body %}
+                {% if messages %}
+                    <div class="alert alert-info text-center">
+                        <strong>{% trans "Messages:" %}</strong>
+                        <ul class="mb-0 list-unstyled">
+                            {% for message in messages %}
+                                <li>{{ message }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+
+                <div class="mb-3 text-center">
+                    <h4 class="mb-3">{% trans "Menu" %}</h4>
+                    <ul class="list-unstyled">
+                        {% if user.is_authenticated %}
+                            {% url 'account_email' as email_url_ %}
+                            {% if email_url_ %}
+                                <li><a class="btn btn-link" href="{{ email_url_ }}">{% trans "Change Email" %}</a></li>
+                            {% endif %}
+                            {% url 'account_change_password' as change_password_url_ %}
+                            {% if change_password_url_ %}
+                                <li><a class="btn btn-link" href="{{ change_password_url_ }}">{% trans "Change Password" %}</a></li>
+                            {% endif %}
+                            {% url 'account_logout' as logout_url_ %}
+                            {% if logout_url_ %}
+                                <li><a class="btn btn-danger btn-sm mt-2" href="{{ logout_url_ }}">{% trans "Sign Out" %}</a></li>
+                            {% endif %}
+                        {% else %}
+                            {% url 'account_login' as login_url_ %}
+                            {% if login_url_ %}
+                                <li><a class="btn btn-primary btn-sm" href="{{ login_url_ }}">{% trans "Sign In" %}</a></li>
+                            {% endif %}
+                            {% url 'account_signup' as signup_url_ %}
+                            {% if signup_url_ %}
+                                <li><a class="btn btn-success btn-sm" href="{{ signup_url_ }}">{% trans "Sign Up" %}</a></li>
+                            {% endif %}
+                        {% endif %}
+                    </ul>
+                </div>
+
+                {% block content %}{% endblock content %}
+            {% endblock body %}
+        </div>
+
+        {% block extra_body %}{% endblock extra_body %}
+    </body>
+</html>

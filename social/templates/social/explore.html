@@ -1,0 +1,82 @@
+{% extends 'landing/base.html' %}
+{% load crispy_forms_tags %}
+{% load hashtag_tags %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mt-3">
+      <div class="col-auto">
+        <a href="{% url 'home' %}" class="btn btn-outline-dark btn-sm"><i class="bi bi-house-door"></i> Home</a>
+      </div>
+      <div class="col-auto">
+        <a href="{% url 'post_list' %}" class="btn btn-dark btn-sm"><i class="bi bi-arrow-left-circle"></i> Feed</a>
+      </div>
+    </div>
+
+    <div class="row justify-content-center mt-3 mb-4">
+        <div class="col-md-6 col-sm-12">
+            {% if tag %}
+                <h3>Explore #{{ tag.name }}</h3>
+                <p class="text-muted">Most recent posts tagged with <strong>#{{ tag.name }}</strong></p>
+            {% else %}
+                <h3>Explore Crime Reports by Tag</h3>
+                <p class="text-muted">Discover reports tagged with #crimeType or #hashtag.</p>
+            {% endif %}
+
+            <form method="POST" class="mb-3">
+                {% csrf_token %}
+                {{ explore_form|crispy }}
+                <button class="btn btn-primary mt-2">Search</button>
+            </form>
+
+            {% if trending_tags %}
+                <div class="mb-4">
+                    <p class="fw-bold">Trending Tags:</p>
+                    {% for tag in trending_tags %}
+                        <a href="{% url 'explore' %}?query={{ tag.name }}" class="badge bg-secondary text-light me-1">
+                            #{{ tag.name }}
+                        </a>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if posts %}
+        <p class="swipe-hint text-center text-muted d-sm-none">← Swipe to see more →</p>
+        <div class="horizontal-scroll-container">
+          {% for post in posts %}
+            <div class="post-card">
+              <p class="text-muted small mb-1">
+                <strong>Anonymous User</strong><br>
+                {{ post.created_on|date:"Y-m-d H:i" }}
+              </p>
+
+              {% if post.crime_types.all %}
+                <div class="mb-2">
+                  {% for crime in post.crime_types.all %}
+                    <span class="badge bg-danger">#{{ crime.name }}</span>
+                  {% endfor %}
+                </div>
+              {% endif %}
+
+              {% if post.image %}
+                <img src="{{ post.image.url }}" class="post-image mb-2"/>
+              {% endif %}
+
+              <p>{{ post.description|link_hashtags|truncatewords:30|safe }}</p>
+              <a href="{% url 'post_detail' post.pk %}" class="btn btn-sm btn-primary mt-2">View Report</a>
+            </div>
+          {% endfor %}
+        </div>
+    {% else %}
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="alert alert-info text-center">
+                    No posts found for this tag. Try another hashtag or check back later.
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock content %}

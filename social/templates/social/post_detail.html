@@ -1,0 +1,87 @@
+{% extends 'landing/base.html' %}
+{% load crispy_forms_tags %}
+{% load hashtag_tags %}
+{% load custom_filters %}
+
+{% block content %}
+<div class="container">
+     <div class="row mt-3">
+         <div class="col-auto">
+            <a href="{% url 'home' %}" class="btn btn-outline-dark btn-sm"><i class="bi bi-house-door"></i> Home</a>
+         </div>
+
+         <div class="col-auto">
+            <a href="{% url 'post_list' %}" class="btn btn-dark btn-sm"><i class="bi bi-arrow-left-circle"></i> Feed</a>
+         </div>
+     </div>
+
+    <div class="row justify-content-center mt-3">
+        <div class="col-md-5 col-sm-12 border-bottom">
+            <p class="text-muted small">
+                <strong>Anonymous User</strong> reported on <strong>{{ post.created_on|date:"Y-m-d H:i" }}</strong>
+                {% if request.user == post.author %}
+                    <a href="{% url 'post_edit' post.pk %}" class="edit-color"><i class="far fa-edit"></i></a>
+                    <a href="{% url 'post_delete' post.pk %}" class="edit-color"><i class="fas fa-trash"></i></a>
+                {% endif %}
+            </p>
+
+            {% if post.last_updated > post.created_on %}
+              <p class="text-muted small"><em>This report has been edited.</em></p>
+            {% endif %}
+
+            <div class="body">
+                <p>{{ post.description|linebreaksbr|link_hashtags }}</p>
+
+                {% if post.identifiers.count > 0 %}
+                    <p><strong>Reported Identifiers:</strong></p>
+                    <ul>
+                        {% for id in post.identifiers.all %}
+                            <li>
+                                {{ id.identifier_type }}: {{ id.value }}
+                                {% with id.value as identifier_value %}
+                                    {% with identifier_counts|get_item:identifier_value as id_count %}
+                                        {% if id_count > 1 %}
+                                            <span class="badge bg-info text-dark" title="This identifier appears in {{ id_count }} reports.">
+                                                🔗 {{ id_count }} Linked Report{{ id_count|pluralize }} —
+                                                <a href="{% url 'identifier_search' %}?query={{ identifier_value }}" class="text-dark"><u>View</u></a>
+                                            </span>
+                                        {% endif %}
+                                    {% endwith %}
+                                {% endwith %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% if related_posts %}
+        <div class="row justify-content-center mt-4">
+            <div class="col-md-8">
+                <h5>Other reports also mentioning this suspect ({{ related_posts|length }} linked):</h5>
+                {% for related in related_posts %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <p class="text-muted small">
+                                Reported on {{ related.created_on|date:"Y-m-d H:i" }}
+                            </p>
+
+                            {% for crime in related.crime_types.all %}
+                                <span class="badge bg-danger">{{ crime.name }}</span>
+                            {% endfor %}
+
+                            <p><strong>When:</strong> {{ related.incident_date }} at {{ related.incident_time }}</p>
+                            <p><strong>Where:</strong> {{ related.location_city }}, {{ related.location_province }}, {{ related.location_country }}</p>
+
+                            <p>{{ related.description|truncatewords:40 }}</p>
+                            <a href="{% url 'post_detail' related.pk %}">View Full Report</a>
+                        </div>
+
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock content %}

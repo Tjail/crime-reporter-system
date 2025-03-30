@@ -1,0 +1,33 @@
+{% extends 'landing/base.html' %}
+{% block content %}
+
+<div class="container my-5">
+
+  <div class="row mt-3">
+    <div class="col-auto">
+      <a href="{% url 'home' %}" class="btn btn-outline-dark btn-sm"><i class="bi bi-house-door"></i> Home</a>
+    </div>
+    <div class="col-auto">
+      <a href="{% url 'post_list' %}" class="btn btn-dark btn-sm"><i class="bi bi-arrow-left-circle"></i> Feed</a>
+    </div>
+  </div>
+
+  <h2>Privacy Policy</h2>
+
+  <p><strong>1. Personal Information:</strong> Your email address and/or mobile number are collected during account creation for identity verification and security purposes. This information is not publicly visible and is only accessible to platform administrators and verified law enforcement personnel (when needed to assist investigations).</p>
+
+  <p><strong>2. Report Visibility:</strong> Reports you submit (excluding uploaded evidence) may be visible to other users for transparency and awareness. You may report anonymously, and your identity is not shown unless you choose to share it(would advice not to unless meeting up with law enforcements). </p>
+
+  <p><strong>3. Evidence Privacy:</strong> Uploaded proof such as screenshots, videos, or files are hidden from the public and only accessible to authorized officials and investigators. We do not share evidence with other users.</p>
+
+  <p><strong>4. Data Storage:</strong> Your reports and account information are stored securely. While we take measures to protect your data, no system is 100% secure. Use strong passwords and avoid sharing sensitive information unless necessary.</p>
+
+  <p><strong>5. Use of Data:</strong> We may use aggregated, non-identifiable data for analytics and improving the system. We do not sell, trade, or rent your personal information to any third parties.</p>
+
+  <p><strong>6. Legal Compliance:</strong> We comply with data protection laws applicable in the Republic of South Africa and other relevant jurisdictions. Data may be disclosed if required by court order or law enforcement request.</p>
+
+  <p><strong>7. Your Rights:</strong> You may request to view, correct, or delete your personal data by contacting support. Note that we may retain some information if required by law or for the safety of others.</p>
+
+  <p><strong>8. Updates:</strong> This privacy policy may change as the platform evolves. Continued use of the site signifies your acceptance of any updated terms.</p>
+</div>
+{% endblock %}

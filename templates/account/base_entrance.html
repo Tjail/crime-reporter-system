@@ -1,0 +1,19 @@
+{% extends "allauth/layouts/entrance.html" %}
+{% load i18n %}
+
+{% block head_title %}
+    {% trans "Crime & Fraud Reporting - Sign In" %}
+{% endblock head_title %}
+
+{% block content %}
+    <div class="text-center">
+        <h2 class="mb-4">{% trans "Report Crime & Fraud" %}</h2>
+        <p class="mb-3">{% blocktrans %}Sign in or create an account to report crimes you have experienced, search existing reports, and contribute to alerting and preventing crime.{% endblocktrans %}</p>
+
+        {% block inner_content %}{% endblock inner_content %}
+
+        <div class="mt-4">
+            <a class="btn btn-secondary btn-sm" href="{% url 'home' %}">{% trans "Back to Home" %}</a>
+        </div>
+    </div>
+{% endblock content %}
