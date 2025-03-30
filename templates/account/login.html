@@ -6,8 +6,8 @@
 {% block content %}
 <div class="container my-5">
   <div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-      <div class="card shadow p-4 border-0">
+    <div class="col-md-10 col-lg-8 col-xl-6">  <!-- Wider column -->
+      <div class="card shadow-lg p-4 border-0">
         <h3 class="text-center mb-4 text-primary">{% trans "Sign In to CrimeWatch" %}</h3>
 
         <form method="post" action="{% url 'account_login' %}">
@@ -15,9 +15,9 @@
           {% for field in form %}
             <div class="mb-3">
               {{ field.label_tag }}
-              {{ field }}
+              <div class="form-control">{{ field }}</div>
               {% if field.errors %}
-                <div class="text-danger small">{{ field.errors|striptags }}</div>
+                <div class="text-danger small mt-1">{{ field.errors|striptags }}</div>
               {% endif %}
             </div>
           {% endfor %}
