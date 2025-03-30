@@ -6,14 +6,20 @@
 {% endblock head_title %}
 
 {% block content %}
-    <div class="text-center">
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <div class="text-center">
         <h2 class="mb-4">{% trans "Report Crime & Fraud" %}</h2>
         <p class="mb-3">{% blocktrans %}Sign in or create an account to report crimes you have experienced, search existing reports, and contribute to alerting and preventing crime.{% endblocktrans %}</p>
+      </div>
 
-        {% block inner_content %}{% endblock inner_content %}
+      {% block inner_content %}{% endblock inner_content %}
 
-        <div class="mt-4">
-            <a class="btn btn-secondary btn-sm" href="{% url 'home' %}">{% trans "Back to Home" %}</a>
-        </div>
+      <div class="mt-4 text-center">
+        <a class="btn btn-secondary btn-sm" href="{% url 'home' %}">{% trans "Back to Home" %}</a>
+      </div>
     </div>
+  </div>
+</div>
 {% endblock content %}

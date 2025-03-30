@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 from django.conf.global_settings import MEDIA_ROOT, MEDIA_URL, STATICFILES_DIRS
 
@@ -22,7 +23,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-bjy#l5+g89bspg434wq80n%-gr__)5v30)zrw+ei8%pb@f4bw='
+
+SECRET_KEY = os.environ.get('SECRET_KEY', 'fallback-secret-key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
