@@ -1,12 +1,13 @@
 {% extends "account/base_entrance.html" %}
 {% load i18n %}
+{% load crispy_forms_tags %}
 
 {% block head_title %}{% trans "Sign In" %}{% endblock head_title %}
 
 {% block content %}
 <div class="container my-5">
   <div class="row justify-content-center">
-    <div class="col-md-10 col-lg-8 col-xl-6">  <!-- Wider column -->
+    <div class="col-md-10 col-lg-8 col-xl-6">
       <div class="card shadow-lg p-4 border-0">
         <h3 class="text-center mb-4 text-primary">{% trans "Sign In to CrimeWatch" %}</h3>
 
@@ -15,7 +16,7 @@
           {% for field in form %}
             <div class="mb-3">
               {{ field.label_tag }}
-              <div class="form-control">{{ field }}</div>
+              {{ field|add_class:"form-control" }}
               {% if field.errors %}
                 <div class="text-danger small mt-1">{{ field.errors|striptags }}</div>
               {% endif %}
