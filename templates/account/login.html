@@ -4,32 +4,33 @@
 {% block head_title %}{% trans "Sign In" %}{% endblock head_title %}
 
 {% block content %}
-<div class="container my-5">
+<div class="container py-5">
   <div class="row justify-content-center">
     <div class="col-md-10 col-lg-8 col-xl-6">
-      <div class="card shadow-lg p-4 border-0">
-        <h3 class="text-center mb-4 text-primary">{% trans "Sign In to CrimeWatch" %}</h3>
+      <div class="card shadow-lg border-0 rounded-4 p-4">
+        <h3 class="text-center mb-4 text-primary">{% trans "Welcome Back" %}</h3>
+        <p class="text-center text-muted mb-4">{% trans "Log in to report crime, search reports, or stay informed." %}</p>
 
         <form method="post" action="{% url 'account_login' %}">
           {% csrf_token %}
           {% for field in form %}
             <div class="mb-3">
               {{ field.label_tag }}
-              {{ field }}
+              {{ field|as_widget|safe }}
               {% if field.errors %}
                 <div class="text-danger small mt-1">{{ field.errors|striptags }}</div>
               {% endif %}
             </div>
           {% endfor %}
 
-          <button type="submit" class="btn btn-primary w-100">
+          <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">
             <i class="fas fa-sign-in-alt me-1"></i> Sign In
           </button>
           {{ redirect_field }}
         </form>
 
-        <p class="text-center mt-3">
-          Don’t have an account? <a href="{% url 'account_signup' %}">Sign up</a>
+        <p class="text-center mt-4 mb-0 text-muted">
+          {% trans "Don’t have an account?" %} <a href="{% url 'account_signup' %}">{% trans "Sign up here" %}</a>
         </p>
       </div>
     </div>

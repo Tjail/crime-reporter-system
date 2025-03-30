@@ -438,3 +438,9 @@ input::placeholder, textarea::placeholder {
     font-size: 1.05rem;
     line-height: 1.6;
 }
+
+input, select, textarea {
+  width: 100%;
+  padding: 0.6rem;
+  border-radius: 6px;
+  font-size: 1rem;
