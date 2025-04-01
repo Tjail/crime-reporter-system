@@ -18,3 +18,6 @@ def terms_view(request):
 
 def privacy_view(request):
     return render(request, 'landing/privacy.html')
+
+def thank_you(request):
+    return render(request, 'landing/thank_you.html')

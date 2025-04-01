@@ -26,19 +26,27 @@
         “When that light hits the sky, it's not just a call. It's a warning.”
       </blockquote>
 
-      <div class="card shadow p-4 mx-auto" style="max-width: 500px;">
-        <h4 class="mb-3">Make a Donation</h4>
-        <form>
-          <div class="mb-3">
-            <label for="donationAmount" class="form-label">Donation Amount (ZAR)</label>
-            <input type="number" class="form-control" id="donationAmount" placeholder="e.g. 100">
-          </div>
-          <div class="mb-3">
-            <label for="donorEmail" class="form-label">Your Email (optional)</label>
-            <input type="email" class="form-control" id="donorEmail" placeholder="you@example.com">
-          </div>
-          <button type="submit" class="btn btn-primary w-100">Donate Now</button>
-        </form>
+      <form action="https://www.payfast.co.za/eng/process" method="post">
+        <input type="hidden" name="merchant_id" value="10037962">
+        <input type="hidden" name="merchant_key" value="zzbhdz23yf6v5">
+        <input type="hidden" name="return_url" value="https://crimewatch-reporting-system.onrender.com/thank-you/">
+        <input type="hidden" name="cancel_url" value="https://crimewatch-reporting-system.onrender.com/donate/">
+        <input type="hidden" name="notify_url" value="https://crimewatch-reporting-system.onrender.com/notify/" />
+
+        <div class="mb-3">
+          <label for="donationAmount" class="form-label">Donation Amount (ZAR)</label>
+          <input type="number" class="form-control" id="donationAmount" name="amount" placeholder="e.g. 100" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="donorEmail" class="form-label">Your Email (optional)</label>
+          <input type="email" class="form-control" id="donorEmail" name="email_address" placeholder="you@example.com">
+        </div>
+
+        <input type="hidden" name="item_name" value="Support Crime Reporter">
+
+        <button type="submit" class="btn btn-primary w-100">Donate Now</button>
+      </form>
         <small class="d-block mt-3 text-muted">Secure payments via PayFast or SnapScan coming soon.</small>
       </div>
     </div>
