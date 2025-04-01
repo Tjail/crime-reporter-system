@@ -167,7 +167,7 @@ STATICFILES_DIRS = [
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-ALLOWED_HOSTS = ['.onrender.com']
+ALLOWED_HOSTS = ['.onrender.com', '127.0.0.1', 'localhost']
 MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
 
