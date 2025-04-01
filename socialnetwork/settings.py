@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
-
+from django.utils.translation import gettext_lazy as _
 from django.conf.global_settings import MEDIA_ROOT, MEDIA_URL, STATICFILES_DIRS
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
 
     'django.contrib.admin',
     'django.contrib.auth',
@@ -67,6 +68,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -74,6 +76,24 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
 ]
+
+LANGUAGES = [
+    ('en', _('English')),
+    ('af', _('Afrikaans')),
+    ('zu', _('Zulu')),
+    ('tn', _('Tswana')),
+    ('nso', _('Sepedi')),
+    ('ts', _('Tsonga')),
+    ('ve', _('Venda')),
+    ('nr', _('Ndebele')),
+    ('xh', _('Xhosa')),
+    ('st', _('Sotho')),
+]
+
+LOCALE_PATHS = [
+    BASE_DIR / 'locale',
+]
+
 
 ROOT_URLCONF = 'socialnetwork.urls'
 

@@ -4,6 +4,7 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils.translation import gettext_lazy as _
 
 class CrimeType(models.Model):
     name = models.CharField(max_length=100)
