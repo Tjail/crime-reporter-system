@@ -1,49 +1,56 @@
-<nav class="navbar navbar-expand-lg bg-body-tertiary">
+<nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
   <div class="container-fluid">
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo03" aria-controls="navbarTogglerDemo03" aria-expanded="false" aria-label="Toggle navigation">
+
+    <!-- Toggler for mobile -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarToggler"
+      aria-controls="navbarToggler" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
 
-    <!-- Brand Name with Conditional URL -->
-    <a class="navbar-brand"
+    <!-- Brand -->
+    <a class="navbar-brand fw-bold"
       {% if user.is_authenticated %}
         href="{% url 'post_list' %}"
       {% else %}
         href="{% url 'home' %}"
       {% endif %}
-      ><i class="fas fa-comment"></i>Crime Report
-      <small class="d-block slogan">You’re Not Alone – Report, Search, Protect</small>
+    >
+      <i class="fas fa-comment"></i> Crime Report
+      <div class="slogan small">You’re Not Alone – Report, Search, Protect</div>
     </a>
 
-    <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
+    <!-- Collapsible links -->
+    <div class="collapse navbar-collapse" id="navbarToggler">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="me-4">
-          <a class="inbox-icon" href="{% url 'explore' %}">
-            <i class="far fa-compass"></i> <span>Explore</span>
+        <li class="nav-item me-3">
+          <a class="nav-link" href="{% url 'explore' %}">
+            <i class="far fa-compass"></i> Explore
           </a>
         </li>
-        <li class="me-4">
-          <a class="inbox-icon d-flex align-items-center gap-1" href="{% url 'crime_article' %}">
-            <i class="fas fa-newspaper"></i> <span>Articles</span>
+        <li class="nav-item me-3">
+          <a class="nav-link" href="{% url 'crime_article' %}">
+            <i class="fas fa-newspaper"></i> Articles
           </a>
         </li>
-        <li class="me-4">
-          <a class="inbox-icon d-flex align-items-center gap-1" href="{% url 'donate' %}">
-            <i class="fas fa-hand-holding-heart"></i> <span>Donate</span>
+        <li class="nav-item me-3">
+          <a class="nav-link" href="{% url 'donate' %}">
+            <i class="fas fa-hand-holding-heart"></i> Donate
           </a>
         </li>
       </ul>
-      <form class="d-flex" method="GET" action="{% url 'profile_search' %}">
+
+      <!-- Search bar -->
+      <form class="d-flex me-3" method="GET" action="{% url 'profile_search' %}">
         <div class="input-group">
-          <span class="input-group-text" id="basic-addon1">#</span>
-          <input type="text" class="form-control"  style="min-width: 340px;" placeholder="Identifier: ID, Passport, mobile number, etc." aria-label="Identifier: ID, Passport, mobile number, etc." aria-describedby="basic-addon1"
-                 name="query" value="{{ request.GET.query }}">
-          <button class="remove-default-btn" type="submit"><i
-                  class="fas fa-search"></i></button>
+          <span class="input-group-text">#</span>
+          <input type="text" class="form-control" placeholder="Search ID, Passport..." name="query" value="{{ request.GET.query }}">
+          <button class="btn btn-outline-dark" type="submit"><i class="fas fa-search"></i></button>
         </div>
       </form>
+
+      <!-- User menu -->
       {% if user.is_authenticated %}
-      <ul class="navbar-nav ms-auto">
+      <ul class="navbar-nav">
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="User" width="30" height="30" class="rounded-circle">
@@ -61,16 +68,10 @@
           </ul>
         </li>
       </ul>
-
-      <!-- If User is Not Logged In, Show Login & Register -->
       {% else %}
-      <ul class="navbar-nav ms-auto">
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'account_login' %}">Login</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'account_signup' %}">Register</a>
-        </li>
+      <ul class="navbar-nav">
+        <li class="nav-item"><a class="nav-link" href="{% url 'account_login' %}">Login</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'account_signup' %}">Register</a></li>
       </ul>
       {% endif %}
     </div>
