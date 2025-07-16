@@ -1,0 +1,90 @@
+{% extends 'landing/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-3">Smart Crime Map</h2>
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> Red zones indicate high crime areas. Click pins for details.
+    </div>
+
+    <div class="d-flex justify-content-between mb-3">
+        <a href="{% url 'drop_pin' %}" class="btn btn-danger">
+            <i class="fas fa-map-marker-alt"></i> Report Suspicious Activity
+        </a>
+        <button id="locate-btn" class="btn btn-outline-primary">
+            <i class="fas fa-location-arrow"></i> Find My Location
+        </button>
+    </div>
+
+    <div id="map" style="height: 600px; border-radius: 8px;"></div>
+
+    <div class="mt-3">
+        <h4>Legend</h4>
+        <div class="d-flex flex-wrap gap-3">
+            <div><span class="badge bg-danger me-2">■</span> Critical Zone (20+ reports)</div>
+            <div><span class="badge bg-warning me-2">■</span> High Alert (10+ reports)</div>
+            <div><span class="badge bg-yellow me-2">■</span> Warning (5+ reports)</div>
+            <div><span class="badge bg-blue me-2">■</span> Individual Reports</div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"/>
+<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+
+<script>
+    // Initialize map
+    const map = L.map('map').setView([{{ default_lat }}, {{ default_lng }}], 12);
+    
+    // Add tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+    
+    // Add cluster group for pins
+    const pinCluster = L.markerClusterGroup();
+    map.addLayer(pinCluster);
+    
+    // Add individual pins
+    const pins = {{ pin_data|safe }};
+    pins.forEach(pin => {
+        const marker = L.marker([pin.lat, pin.lng])
+            .bindPopup(`
+                <b>${pin.username}</b><br>
+                ${pin.message}<br>
+                <small>${pin.date}</small>
+            `);
+        pinCluster.addLayer(marker);
+    });
+    
+    // Add hotzones
+    const hotzones = {{ hotzone_data|safe }};
+    hotzones.forEach(zone => {
+        const color = zone.level === 3 ? 'red' : zone.level === 2 ? 'orange' : 'yellow';
+        
+        L.circle([zone.lat, zone.lng], {
+            color: color,
+            fillColor: color,
+            fillOpacity: 0.2,
+            radius: zone.radius * 1000  // Convert km to meters
+        }).addTo(map).bindPopup(`
+            <b>${zone.description}</b><br>
+            <small>Approx. ${zone.radius}km radius</small>
+        `);
+    });
+    
+    // Locate button
+    document.getElementById('locate-btn').addEventListener('click', () => {
+        map.locate({setView: true, maxZoom: 14});
+    });
+    
+    // Handle location found
+    map.on('locationfound', (e) => {
+        L.marker([e.latlng.lat, e.latlng.lng]).addTo(map)
+            .bindPopup("Your Location").openPopup();
+    });
+</script>
+{% endblock %}

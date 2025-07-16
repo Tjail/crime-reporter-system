@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from .views import PostListView, PostDetailView, PostEditView, PostDeleteView, ProfileView, ProfileEditView, UserSearch, Explore, IdentifierSearchView, verify_otp_view, resend_otp_view, AddArticleView, ArticleDetailView, DonationPageView
 from . import views
 
@@ -18,6 +18,7 @@ urlpatterns = [
     path('crime-article/add/', AddArticleView.as_view(), name='add_article'),
     path('crime-article/<int:pk>/', views.ArticleDetailView.as_view(), name='article_detail'),
     path('donate/', DonationPageView.as_view(), name='donate'),
+    path('map/', include('crime_map.urls')),
 ]
 
 

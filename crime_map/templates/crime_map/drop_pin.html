@@ -1,0 +1,63 @@
+{% extends 'landing/base.html' %}
+{% load leaflet_tags %}
+
+{% block head %}
+  {% leaflet_js %}
+  {% leaflet_css %}
+  <style>
+    #map {
+      height: 400px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+    }
+    .form-container {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="form-container">
+    <h2><i class="fas fa-map-marker-alt"></i> Report Suspicious Activity</h2>
+    <p class="text-muted mb-4">Help keep your community safe by reporting suspicious behavior.</p>
+    
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+    
+    <form method="post">
+      {% csrf_token %}
+      {{ form.media }}
+      
+      <div class="mb-3">
+        <label class="form-label">Location:</label>
+        {{ form.location }}
+      </div>
+      
+      <div class="mb-3">
+        <label class="form-label">Details (optional):</label>
+        {{ form.message }}
+        <div class="form-text">Max 500 characters. Describe what you saw.</div>
+      </div>
+      
+      <div class="mb-3 form-check">
+        {{ form.is_anonymous }}
+        <label class="form-check-label" for="{{ form.is_anonymous.id_for_label }}">
+          Report anonymously
+        </label>
+      </div>
+      
+      <button type="submit" class="btn btn-primary">
+        <i class="fas fa-paper-plane"></i> Submit Report
+      </button>
+      <a href="{% url 'crime_map' %}" class="btn btn-outline-secondary ms-2">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

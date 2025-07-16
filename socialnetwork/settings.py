@@ -45,6 +45,10 @@ AUTHENTICATION_BACKENDS = [
 INSTALLED_APPS = [
     'social',
     'landing',
+    'crime_map',
+    
+    'leaflet',
+    'django.contrib.gis'
 
     'crispy_forms',
     'crispy_bootstrap5',
