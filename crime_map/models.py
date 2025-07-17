@@ -6,6 +6,26 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 
 User = get_user_model()
 
+class PinDrop(models.Model):
+    REASON_CHOICES = [
+        ('suspicious', 'Suspicious Activity'),
+        ('petty', 'Petty Crime'),
+        ('felony', 'Felony Crime'),
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    latitude = models.FloatField()
+    longitude = models.FloatField()
+    reason = models.CharField(max_length=20, choices=REASON_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_anonymous = models.BooleanField(default=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        
+    def __str__(self):
+        return f"Quick Pin ({self.get_reason_display()}) at {self.latitude},{self.longitude}"
+
 class SuspiciousPin(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     latitude = models.FloatField()

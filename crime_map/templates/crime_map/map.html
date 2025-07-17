@@ -70,6 +70,22 @@
             <small>Approx. ${zone.radius}km radius</small>
         `);
     });
+
+    const Pindrops = {{ pin_drop_data|safe }};
+    Pindrops.forEach(pin => {
+        const color = pin.reason.includes('Felony') ? 'red' : 
+                    pin.reason.includes('Petty') ? 'orange' : 'yellow';
+        
+        L.circleMarker([pin.lat, pin.lng], {
+            color: color,
+            fillColor: color,
+            fillOpacity: 0.7,
+            radius: 8
+        }).addTo(map).bindPopup(`
+            <b>${pin.reason}</b><br>
+            <small>${pin.date}</small>
+        `);
+    });
     
     document.getElementById('locate-btn').addEventListener('click', () => {
         map.locate({setView: true, maxZoom: 14});

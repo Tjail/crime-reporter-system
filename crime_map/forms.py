@@ -1,4 +1,5 @@
 from django import forms
+from .models import PinDrop
 
 class PinDropForm(forms.Form):
     latitude = forms.FloatField(widget=forms.HiddenInput())
@@ -15,4 +16,9 @@ class PinDropForm(forms.Form):
         required=False,
         initial=False,
         label="Report anonymously"
+    )
+    reason = forms.ChoiceField(
+        choices=PinDrop.REASON_CHOICES,
+        widget=forms.RadioSelect,
+        label="Reason for reporting"
     )

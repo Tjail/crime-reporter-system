@@ -7,6 +7,46 @@ from .models import SuspiciousPin, HotZone
 from .forms import PinDropForm
 from .utils import calculate_distance
 import json
+from django.shortcuts import render, redirect
+from django.contrib.gis.geos import Point
+from django.utils import timezone
+from datetime import timedelta
+from .models import PinDrop
+from .forms import PinDropForm
+
+@login_required
+def pin_drop_location(request):
+    last_pin = PinDrop.objects.filter(
+        user=request.user,
+        created_at__gte=timezone.now() - timedelta(hours=24)
+    ).first()
+    
+    if last_pin:
+        messages.warning(request, "You can only drop one quick pin per day")
+        return redirect('crime_map')
+
+    if request.method == 'POST':
+        form = PinDropForm(request.POST)
+        if form.is_valid():
+            pin = PinDrop(
+                user=request.user,
+                latitude=form.cleaned_data['latitude'],
+                longitude=form.cleaned_data['longitude'],
+                reason=form.cleaned_data['reason'],
+                is_anonymous=True
+            )
+            pin.save()
+            
+            messages.success(request, "Quick report submitted anonymously. Thank you!")
+            return redirect('crime_map')
+    else:
+        form = PinDropForm()
+    
+    return render(request, 'crime_map/pin_drop_location.html', {
+        'form': form,
+        'default_lat': -26.2041,
+        'default_lng': 28.0473
+    })
 
 @login_required
 def map_view(request):
