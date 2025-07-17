@@ -46,9 +46,6 @@ INSTALLED_APPS = [
     'social',
     'landing',
     'crime_map',
-    
-    'leaflet',
-    'django.contrib.gis'
 
     'crispy_forms',
     'crispy_bootstrap5',
@@ -59,6 +56,7 @@ INSTALLED_APPS = [
 
     'django.contrib.admin',
     'django.contrib.auth',
+    'django.contrib.gis',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
@@ -67,6 +65,14 @@ INSTALLED_APPS = [
 ]
 
 SITE_ID = 1
+
+import os
+if os.name == 'nt':  # Windows
+    OSGEO4W = r"C:\OSGeo4W"
+    os.environ['OSGEO4W_ROOT'] = OSGEO4W
+    os.environ['GDAL_DATA'] = OSGEO4W + r"\share\gdal"
+    os.environ['PROJ_LIB'] = OSGEO4W + r"\share\proj"
+    os.environ['PATH'] = OSGEO4W + r"\bin;" + os.environ['PATH']
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

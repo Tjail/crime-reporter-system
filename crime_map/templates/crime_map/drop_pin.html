@@ -1,9 +1,7 @@
 {% extends 'landing/base.html' %}
-{% load leaflet_tags %}
+{% load static %}
 
 {% block head %}
-  {% leaflet_js %}
-  {% leaflet_css %}
   <style>
     #map {
       height: 400px;
@@ -15,6 +13,9 @@
       padding: 20px;
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .hidden-field {
+      display: none;
     }
   </style>
 {% endblock %}
@@ -31,13 +32,17 @@
       {% endfor %}
     {% endif %}
     
-    <form method="post">
+    <form method="post" id="report-form">
       {% csrf_token %}
-      {{ form.media }}
+      
+      <!-- Hidden latitude/longitude fields -->
+      {{ form.latitude }}
+      {{ form.longitude }}
       
       <div class="mb-3">
         <label class="form-label">Location:</label>
-        {{ form.location }}
+        <div id="map"></div>
+        <small class="text-muted">Click on the map to select location</small>
       </div>
       
       <div class="mb-3">
@@ -60,4 +65,36 @@
     </form>
   </div>
 </div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+
+<script>
+    // Initialize map
+    const map = L.map('map').setView([{{ default_lat|default:-26.2041 }}, {{ default_lng|default:28.0473 }}], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    let marker;
+    
+    // Set initial values if they exist
+    const initialLat = parseFloat(document.getElementById('id_latitude').value) || {{ default_lat|default:-26.2041 }};
+    const initialLng = parseFloat(document.getElementById('id_longitude').value) || {{ default_lng|default:28.0473 }};
+    
+    if (initialLat && initialLng) {
+        marker = L.marker([initialLat, initialLng]).addTo(map);
+        map.setView([initialLat, initialLng], 13);
+    }
+    
+    // Handle map clicks
+    map.on('click', function(e) {
+        if (marker) {
+            map.removeLayer(marker);
+        }
+        marker = L.marker(e.latlng).addTo(map);
+        document.getElementById('id_latitude').value = e.latlng.lat;
+        document.getElementById('id_longitude').value = e.latlng.lng;
+    });
+</script>
 {% endblock %}
