@@ -1,6 +1,7 @@
 from math import radians, sin, cos, sqrt, atan2
 from datetime import timedelta
 from django.utils import timezone
+from .models import SuspiciousPin
 
 def calculate_distance(lat1, lon1, lat2, lon2):
     """
@@ -23,7 +24,6 @@ def get_crime_stats(latitude, longitude, radius_km):
     """
     Get crime statistics for an area
     """
-    from .models import SuspiciousPin
     
     stats = {
         'total_reports': 0,

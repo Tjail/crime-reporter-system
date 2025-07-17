@@ -71,20 +71,23 @@
         `);
     });
 
-    const Pindrops = {{ pin_drop_data|safe }};
-    Pindrops.forEach(pin => {
-        const color = pin.reason.includes('Felony') ? 'red' : 
-                    pin.reason.includes('Petty') ? 'orange' : 'yellow';
+    const pins = {{ pin_data|safe }};
+    pins.forEach(pin => {
+        const color = pin.type === 'felony' ? 'red' : 
+                    pin.type === 'petty' ? 'orange' : 'yellow';
         
-        L.circleMarker([pin.lat, pin.lng], {
+        const marker = L.circleMarker([pin.lat, pin.lng], {
             color: color,
             fillColor: color,
             fillOpacity: 0.7,
             radius: 8
-        }).addTo(map).bindPopup(`
-            <b>${pin.reason}</b><br>
-            <small>${pin.date}</small>
-        `);
+        }).addTo(map);
+        
+        let popupContent = `<b>${pin.type.toUpperCase()}</b>`;
+        if (pin.message) popupContent += `<p>${pin.message}</p>`;
+        popupContent += `<small>Reported by ${pin.username}<br>${pin.date}</small>`;
+        
+        marker.bindPopup(popupContent);
     });
     
     document.getElementById('locate-btn').addEventListener('click', () => {

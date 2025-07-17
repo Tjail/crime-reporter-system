@@ -3,46 +3,67 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
 from datetime import timedelta
-from .models import SuspiciousPin, HotZone
+from .models import HotZone, PinDrop
 from .forms import PinDropForm
 from .utils import calculate_distance
 import json
-from django.shortcuts import render, redirect
-from django.contrib.gis.geos import Point
 from django.utils import timezone
-from datetime import timedelta
-from .models import PinDrop
-from .forms import PinDropForm
+from .forms import PinDropForm, QuickPinForm
 
 @login_required
-def pin_drop_location(request):
+def pin_drop(request):
+    """Detailed pin drop form"""
     last_pin = PinDrop.objects.filter(
         user=request.user,
-        created_at__gte=timezone.now() - timedelta(hours=24)
+        created_at__gte=timezone.now() - timedelta(days=1)
     ).first()
     
     if last_pin:
-        messages.warning(request, "You can only drop one quick pin per day")
+        messages.warning(request, "You can only submit one report per day")
         return redirect('crime_map')
 
     if request.method == 'POST':
         form = PinDropForm(request.POST)
         if form.is_valid():
-            pin = PinDrop(
-                user=request.user,
-                latitude=form.cleaned_data['latitude'],
-                longitude=form.cleaned_data['longitude'],
-                reason=form.cleaned_data['reason'],
-                is_anonymous=True
-            )
+            pin = form.save(commit=False)
+            pin.user = request.user
             pin.save()
             
-            messages.success(request, "Quick report submitted anonymously. Thank you!")
+            check_hotzone_creation(pin)
+            messages.success(request, "Report submitted successfully!")
             return redirect('crime_map')
     else:
         form = PinDropForm()
     
-    return render(request, 'crime_map/pin_drop_location.html', {
+    return render(request, 'crime_map/pin_drop.html', {
+        'form': form,
+        'default_lat': -26.2041,
+        'default_lng': 28.0473
+    })
+
+@login_required
+def quick_pin(request):
+    """Quick anonymous reporting"""
+    if request.method == 'POST':
+        form = QuickPinForm(request.POST)
+        if form.is_valid():
+            pin = PinDrop(
+                user=request.user,
+                latitude=form.cleaned_data['latitude'],
+                longitude=form.cleaned_data['longitude'],
+                report_type=form.cleaned_data['report_type'],
+                message=form.cleaned_data['message'],
+                is_anonymous=True
+            )
+            pin.save()
+            
+            check_hotzone_creation(pin)
+            messages.success(request, "Anonymous report submitted. Thank you!")
+            return redirect('crime_map')
+    else:
+        form = QuickPinForm()
+    
+    return render(request, 'crime_map/quick_pin.html', {
         'form': form,
         'default_lat': -26.2041,
         'default_lng': 28.0473
@@ -50,7 +71,8 @@ def pin_drop_location(request):
 
 @login_required
 def map_view(request):
-    pins = SuspiciousPin.objects.filter(
+    # Get all pins (both detailed and quick reports)
+    pins = PinDrop.objects.filter(
         created_at__gte=timezone.now() - timedelta(days=30)
     ).order_by('-created_at')
     
@@ -63,6 +85,7 @@ def map_view(request):
     pin_data = [{
         'lat': pin.latitude,
         'lng': pin.longitude,
+        'type': pin.report_type,
         'message': pin.message or '',
         'username': 'Anonymous' if pin.is_anonymous else pin.user.username,
         'date': pin.created_at.strftime('%Y-%m-%d %H:%M')
@@ -86,46 +109,11 @@ def map_view(request):
     return render(request, 'crime_map/map.html', context)
 
 @login_required
-def drop_pin(request):
-    # Limit users to one pin per week
-    last_pin = SuspiciousPin.objects.filter(
-        user=request.user,
-        created_at__gte=timezone.now() - timedelta(days=7)
-    ).first()
-    
-    if last_pin:
-        messages.warning(request, 
-            f"You can only drop one pin per week. Try again after {last_pin.created_at + timedelta(days=7):%Y-%m-%d}")
-        return redirect('crime_map')
-    
-    if request.method == 'POST':
-        form = PinDropForm(request.POST)
-        if form.is_valid():
-            # Create new pin
-            pin = SuspiciousPin(
-                user=request.user,
-                latitude=form.cleaned_data['latitude'],
-                longitude=form.cleaned_data['longitude'],
-                message=form.cleaned_data['message'],
-                is_anonymous=form.cleaned_data['is_anonymous']
-            )
-            pin.save()
-            
-            check_hotzone_creation(pin)
-            
-            messages.success(request, "Report submitted. Thank you for making your community safer!")
-            return redirect('crime_map')
-    else:
-        form = PinDropForm()
-    
-    return render(request, 'crime_map/drop_pin.html', {'form': form})
-
-@login_required
 def hotzone_detail(request, pk):
     """View details of a specific hotzone"""
     hotzone = get_object_or_404(HotZone, pk=pk)
     
-    pins = SuspiciousPin.objects.all()
+    pins = PinDrop.objects.all()
     pins_in_zone = []
     for pin in pins:
         distance = calculate_distance(
@@ -143,9 +131,7 @@ def hotzone_detail(request, pk):
 
 def check_hotzone_creation(new_pin):
     """Check if enough reports exist to create a hotzone"""
-    from .models import SuspiciousPin, HotZone
-    
-    recent_pins = SuspiciousPin.objects.filter(
+    recent_pins = PinDrop.objects.filter(
         created_at__gte=timezone.now() - timedelta(days=30)
     ).exclude(id=new_pin.id)
     

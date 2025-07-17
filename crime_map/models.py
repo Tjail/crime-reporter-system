@@ -2,48 +2,37 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from datetime import timedelta
-from django.core.validators import MinValueValidator, MaxValueValidator
 
 User = get_user_model()
 
 class PinDrop(models.Model):
-    REASON_CHOICES = [
+    REPORT_TYPE_CHOICES = [
         ('suspicious', 'Suspicious Activity'),
         ('petty', 'Petty Crime'),
         ('felony', 'Felony Crime'),
+        ('other', 'Other Incident'),
     ]
     
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     latitude = models.FloatField()
     longitude = models.FloatField()
-    reason = models.CharField(max_length=20, choices=REASON_CHOICES)
-    created_at = models.DateTimeField(auto_now_add=True)
-    is_anonymous = models.BooleanField(default=True)
-    
-    class Meta:
-        ordering = ['-created_at']
-        
-    def __str__(self):
-        return f"Quick Pin ({self.get_reason_display()}) at {self.latitude},{self.longitude}"
-
-class SuspiciousPin(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    latitude = models.FloatField()
-    longitude = models.FloatField()
+    report_type = models.CharField(max_length=20, choices=REPORT_TYPE_CHOICES)
     message = models.TextField(blank=True, null=True, max_length=500)
     created_at = models.DateTimeField(auto_now_add=True)
     is_anonymous = models.BooleanField(default=False)
+    requires_followup = models.BooleanField(default=False)
     
     class Meta:
         ordering = ['-created_at']
         indexes = [
             models.Index(fields=['latitude', 'longitude']),
             models.Index(fields=['created_at']),
+            models.Index(fields=['report_type']),
         ]
-    
+        
     def __str__(self):
         username = "Anonymous" if self.is_anonymous else self.user.username
-        return f"Pin by {username} at {self.created_at.strftime('%Y-%m-%d %H:%M')}"
+        return f"{self.get_report_type_display()} by {username} at {self.created_at.strftime('%Y-%m-%d %H:%M')}"
 
 class HotZone(models.Model):
     ALERT_LEVELS = (
@@ -54,7 +43,7 @@ class HotZone(models.Model):
     
     latitude = models.FloatField()
     longitude = models.FloatField()
-    radius = models.FloatField(default=1.5)  # in kilometers
+    radius = models.FloatField(default=1.5)
     alert_level = models.IntegerField(choices=ALERT_LEVELS)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
