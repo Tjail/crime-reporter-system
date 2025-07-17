@@ -1,21 +1,19 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
 from datetime import timedelta
-from django.contrib.gis.geos import Point
 from .models import SuspiciousPin, HotZone
 from .forms import PinDropForm
+from .utils import calculate_distance
 import json
 
 @login_required
 def map_view(request):
-    # Get recent pins (last 30 days)
     pins = SuspiciousPin.objects.filter(
         created_at__gte=timezone.now() - timedelta(days=30)
     ).order_by('-created_at')
     
-    # Get active hotzones
     hotzones = HotZone.objects.filter(
         resolved=False,
         expires_at__gte=timezone.now()
@@ -66,13 +64,13 @@ def drop_pin(request):
             # Create new pin
             pin = SuspiciousPin(
                 user=request.user,
-                location=form.cleaned_data['location'],
+                latitude=form.cleaned_data['latitude'],
+                longitude=form.cleaned_data['longitude'],
                 message=form.cleaned_data['message'],
                 is_anonymous=form.cleaned_data['is_anonymous']
             )
             pin.save()
             
-            # Check if this creates a hotzone
             check_hotzone_creation(pin)
             
             messages.success(request, "Report submitted. Thank you for making your community safer!")
@@ -82,16 +80,43 @@ def drop_pin(request):
     
     return render(request, 'crime_map/drop_pin.html', {'form': form})
 
+@login_required
+def hotzone_detail(request, pk):
+    """View details of a specific hotzone"""
+    hotzone = get_object_or_404(HotZone, pk=pk)
+    
+    pins = SuspiciousPin.objects.all()
+    pins_in_zone = []
+    for pin in pins:
+        distance = calculate_distance(
+            hotzone.latitude, hotzone.longitude,
+            pin.latitude, pin.longitude
+        )
+        if distance <= hotzone.radius:
+            pins_in_zone.append(pin)
+    
+    context = {
+        'hotzone': hotzone,
+        'pins': pins_in_zone,
+    }
+    return render(request, 'crime_map/hotzone_detail.html', context)
+
 def check_hotzone_creation(new_pin):
     """Check if enough reports exist to create a hotzone"""
-    from django.contrib.gis.measure import D
-    from django.contrib.gis.geos import Point
+    from .models import SuspiciousPin, HotZone
     
-    # Find nearby pins within 1.5km radius (last 30 days)
-    nearby_pins = SuspiciousPin.objects.filter(
-        created_at__gte=timezone.now() - timedelta(days=30),
-        location__distance_lte=(new_pin.location, D(km=1.5))
+    recent_pins = SuspiciousPin.objects.filter(
+        created_at__gte=timezone.now() - timedelta(days=30)
     ).exclude(id=new_pin.id)
+    
+    nearby_pins = []
+    for pin in recent_pins:
+        distance = calculate_distance(
+            new_pin.latitude, new_pin.longitude,
+            pin.latitude, pin.longitude
+        )
+        if distance <= 1.5:  # 1.5km radius
+            nearby_pins.append(pin)
     
     unique_users = {pin.user for pin in nearby_pins if pin.user}
     user_count = len(unique_users)
@@ -105,11 +130,15 @@ def check_hotzone_creation(new_pin):
     else:
         return
     
-    # Check for existing overlapping hotzone
-    existing_zone = HotZone.objects.filter(
-        resolved=False,
-        center__distance_lte=(new_pin.location, D(km=1.5))
-    ).first()
+    existing_zone = None
+    for zone in HotZone.objects.filter(resolved=False):
+        distance = calculate_distance(
+            new_pin.latitude, new_pin.longitude,
+            zone.latitude, zone.longitude
+        )
+        if distance <= 1.5:
+            existing_zone = zone
+            break
     
     if existing_zone:
         if existing_zone.alert_level < alert_level:
@@ -117,7 +146,8 @@ def check_hotzone_creation(new_pin):
             existing_zone.save()
     else:
         HotZone.objects.create(
-            center=new_pin.location,
+            latitude=new_pin.latitude,
+            longitude=new_pin.longitude,
             radius=1.5,
             alert_level=alert_level
         )

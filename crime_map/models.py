@@ -1,67 +1,47 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-from django.contrib.gis.db import models as gis_models
 from django.utils import timezone
 from datetime import timedelta
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 User = get_user_model()
 
-class SuspiciousPin(gis_models.Model):
+class SuspiciousPin(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    location = gis_models.PointField(geography=True, srid=4326)
+    latitude = models.FloatField()
+    longitude = models.FloatField()
     message = models.TextField(blank=True, null=True, max_length=500)
     created_at = models.DateTimeField(auto_now_add=True)
     is_anonymous = models.BooleanField(default=False)
     
-    # For spatial queries
-    objects = gis_models.Manager()
-    
     class Meta:
         ordering = ['-created_at']
         indexes = [
-            gis_models.Index(fields=['location']),
+            models.Index(fields=['latitude', 'longitude']),
             models.Index(fields=['created_at']),
         ]
-    
-    @property
-    def latitude(self):
-        return self.location.y if self.location else None
-    
-    @property
-    def longitude(self):
-        return self.location.x if self.location else None
     
     def __str__(self):
         username = "Anonymous" if self.is_anonymous else self.user.username
         return f"Pin by {username} at {self.created_at.strftime('%Y-%m-%d %H:%M')}"
 
-class HotZone(gis_models.Model):
+class HotZone(models.Model):
     ALERT_LEVELS = (
         (1, 'Warning (5+ reports)'),
         (2, 'High Alert (10+ reports)'),
         (3, 'Critical (20+ reports)'),
     )
     
-    center = gis_models.PointField(geography=True, srid=4326)
+    latitude = models.FloatField()
+    longitude = models.FloatField()
     radius = models.FloatField(default=1.5)  # in kilometers
     alert_level = models.IntegerField(choices=ALERT_LEVELS)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
     resolved = models.BooleanField(default=False)
     
-    objects = gis_models.Manager()
-    
     class Meta:
         ordering = ['-alert_level', '-created_at']
-    
-    @property
-    def latitude(self):
-        return self.center.y if self.center else None
-    
-    @property
-    def longitude(self):
-        return self.center.x if self.center else None
     
     def save(self, *args, **kwargs):
         if not self.expires_at:

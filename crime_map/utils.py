@@ -1,9 +1,10 @@
 from math import radians, sin, cos, sqrt, atan2
+from datetime import timedelta
+from django.utils import timezone
 
 def calculate_distance(lat1, lon1, lat2, lon2):
     """
-    Calculate distance between two points in kilometers
-    (Fallback if GIS functions not available)
+    Calculate distance between two points in kilometers using Haversine formula
     """
     try:
         lat1, lon1, lat2, lon2 = map(float, [lat1, lon1, lat2, lon2])
@@ -14,15 +15,14 @@ def calculate_distance(lat1, lon1, lat2, lon2):
         a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
         c = 2 * atan2(sqrt(a), sqrt(1-a))
         
-        return 6371 * c  # Earth radius in km
+        return 6371 * c
     except (TypeError, ValueError):
         return float('inf')
 
-def get_crime_stats(center_point, radius_km):
+def get_crime_stats(latitude, longitude, radius_km):
     """
     Get crime statistics for an area
     """
-    from django.contrib.gis.measure import D
     from .models import SuspiciousPin
     
     stats = {
@@ -32,15 +32,18 @@ def get_crime_stats(center_point, radius_km):
         'time_distribution': {}
     }
     
-    # All reports in area
-    all_reports = SuspiciousPin.objects.filter(
-        location__distance_lte=(center_point, D(km=radius_km))
-    )
-    stats['total_reports'] = all_reports.count()
+    all_pins = SuspiciousPin.objects.all()
+    nearby_pins = []
     
-    # Recent reports (last 30 days)
-    recent_reports = all_reports.filter(
-        created_at__gte=timezone.now() - timedelta(days=30))
-    stats['recent_reports'] = recent_reports.count()
+    for pin in all_pins:
+        distance = calculate_distance(latitude, longitude, pin.latitude, pin.longitude)
+        if distance <= radius_km:
+            nearby_pins.append(pin)
+    
+    stats['total_reports'] = len(nearby_pins)
+    
+    recent_pins = [pin for pin in nearby_pins 
+                  if pin.created_at >= timezone.now() - timedelta(days=30)]
+    stats['recent_reports'] = len(recent_pins)
     
     return stats
