@@ -1,0 +1,38 @@
+{% extends 'landing/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <h2>Hotzone Details</h2>
+    
+    <div class="card mb-4">
+        <div class="card-body">
+            <h3 class="card-title">{{ hotzone.get_alert_level_display }}</h3>
+            <p class="card-text">
+                <strong>Location:</strong> {{ hotzone.latitude|floatformat:4 }}, {{ hotzone.longitude|floatformat:4 }}<br>
+                <strong>Radius:</strong> {{ hotzone.radius }} km<br>
+                <strong>Created:</strong> {{ hotzone.created_at|date:"Y-m-d" }}<br>
+                <strong>Expires:</strong> {{ hotzone.expires_at|date:"Y-m-d" }}
+            </p>
+        </div>
+    </div>
+
+    <h4>Reports in this area ({{ pins|length }})</h4>
+    
+    {% if pins %}
+        <div class="list-group">
+            {% for pin in pins %}
+                <div class="list-group-item">
+                    <h5>{% if pin.is_anonymous %}Anonymous{% else %}{{ pin.user.username }}{% endif %}</h5>
+                    <p>{{ pin.message|default:"No details provided" }}</p>
+                    <small class="text-muted">{{ pin.created_at|date:"Y-m-d H:i" }}</small>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">No reports found in this hotzone.</div>
+    {% endif %}
+    
+    <a href="{% url 'crime_map' %}" class="btn btn-secondary mt-3">Back to Map</a>
+</div>
+{% endblock %}
