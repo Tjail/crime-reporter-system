@@ -14,7 +14,7 @@ class SuspiciousPin(gis_models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     is_anonymous = models.BooleanField(default=False)
     
-    # For spatial queries
+    # For spatial queries typpe
     objects = gis_models.Manager()
     
     class Meta:
