@@ -3,22 +3,25 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
 from datetime import timedelta
+from django.contrib.gis.geos import Point
 from .models import SuspiciousPin, HotZone
 from .forms import PinDropForm
-from .utils import calculate_distance, get_points_in_radius
 import json
 
 @login_required
 def map_view(request):
+    # Get recent pins (last 30 days)
     pins = SuspiciousPin.objects.filter(
         created_at__gte=timezone.now() - timedelta(days=30)
     ).order_by('-created_at')
     
+    # Get active hotzones
     hotzones = HotZone.objects.filter(
         resolved=False,
         expires_at__gte=timezone.now()
     )
     
+    # Prepare data for frontend
     pin_data = [{
         'lat': pin.latitude,
         'lng': pin.longitude,
@@ -28,8 +31,8 @@ def map_view(request):
     } for pin in pins]
     
     hotzone_data = [{
-        'lat': zone.center_latitude,
-        'lng': zone.center_longitude,
+        'lat': zone.latitude,
+        'lng': zone.longitude,
         'radius': zone.radius,
         'level': zone.alert_level,
         'description': zone.get_alert_level_display()
@@ -38,7 +41,7 @@ def map_view(request):
     context = {
         'pin_data': json.dumps(pin_data),
         'hotzone_data': json.dumps(hotzone_data),
-        'default_lat': -26.2041,
+        'default_lat': -26.2041,  # Johannesburg
         'default_lng': 28.0473
     }
     
@@ -46,6 +49,7 @@ def map_view(request):
 
 @login_required
 def drop_pin(request):
+    # Limit users to one pin per week
     last_pin = SuspiciousPin.objects.filter(
         user=request.user,
         created_at__gte=timezone.now() - timedelta(days=7)
@@ -59,16 +63,17 @@ def drop_pin(request):
     if request.method == 'POST':
         form = PinDropForm(request.POST)
         if form.is_valid():
+            # Create new pin
             pin = SuspiciousPin(
                 user=request.user,
-                latitude=form.cleaned_data['latitude'],
-                longitude=form.cleaned_data['longitude'],
+                location=form.cleaned_data['location'],
                 message=form.cleaned_data['message'],
                 is_anonymous=form.cleaned_data['is_anonymous']
             )
             pin.save()
             
-            check_hotzone_creation(pin.latitude, pin.longitude)
+            # Check if this creates a hotzone
+            check_hotzone_creation(pin)
             
             messages.success(request, "Report submitted. Thank you for making your community safer!")
             return redirect('crime_map')
@@ -77,18 +82,20 @@ def drop_pin(request):
     
     return render(request, 'crime_map/drop_pin.html', {'form': form})
 
-def check_hotzone_creation(latitude, longitude, radius_km=1.5):
+def check_hotzone_creation(new_pin):
     """Check if enough reports exist to create a hotzone"""
-    from .models import SuspiciousPin, HotZone
+    from django.contrib.gis.measure import D
+    from django.contrib.gis.geos import Point
     
-    recent_pins = SuspiciousPin.objects.filter(
-        created_at__gte=timezone.now() - timedelta(days=30)
-    )
-    nearby_pins = get_points_in_radius(latitude, longitude, radius_km, recent_pins)
+    # Find nearby pins within 1.5km radius (last 30 days)
+    nearby_pins = SuspiciousPin.objects.filter(
+        created_at__gte=timezone.now() - timedelta(days=30),
+        location__distance_lte=(new_pin.location, D(km=1.5))
+    ).exclude(id=new_pin.id)
     
     unique_users = {pin.user for pin in nearby_pins if pin.user}
-    
     user_count = len(unique_users)
+    
     if user_count >= 20:
         alert_level = 3
     elif user_count >= 10:
@@ -98,13 +105,11 @@ def check_hotzone_creation(latitude, longitude, radius_km=1.5):
     else:
         return
     
-    existing_zone = None
-    for zone in HotZone.objects.filter(resolved=False):
-        distance = calculate_distance(latitude, longitude, 
-                                    zone.center_latitude, zone.center_longitude)
-        if distance <= radius_km:
-            existing_zone = zone
-            break
+    # Check for existing overlapping hotzone
+    existing_zone = HotZone.objects.filter(
+        resolved=False,
+        center__distance_lte=(new_pin.location, D(km=1.5))
+    ).first()
     
     if existing_zone:
         if existing_zone.alert_level < alert_level:
@@ -112,8 +117,7 @@ def check_hotzone_creation(latitude, longitude, radius_km=1.5):
             existing_zone.save()
     else:
         HotZone.objects.create(
-            center_latitude=latitude,
-            center_longitude=longitude,
-            radius=radius_km,
+            center=new_pin.location,
+            radius=1.5,
             alert_level=alert_level
         )

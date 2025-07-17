@@ -20,7 +20,8 @@ class PinDropForm(gis_forms.Form):
         widget=gis_forms.OSMWidget(attrs={
             'default_lat': -26.2041,  # Johannesburg
             'default_lon': 28.0473,
-            'map_width': 800,
-            'map_height': 500,
-        })
+            'map_width': '100%',
+            'map_height': '400px',
+        }),
+        srid=4326
     )

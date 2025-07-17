@@ -36,19 +36,15 @@
 <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
 
 <script>
-    // Initialize map
     const map = L.map('map').setView([{{ default_lat }}, {{ default_lng }}], 12);
     
-    // Add tiles
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
     
-    // Add cluster group for pins
     const pinCluster = L.markerClusterGroup();
     map.addLayer(pinCluster);
     
-    // Add individual pins
     const pins = {{ pin_data|safe }};
     pins.forEach(pin => {
         const marker = L.marker([pin.lat, pin.lng])
@@ -60,7 +56,6 @@
         pinCluster.addLayer(marker);
     });
     
-    // Add hotzones
     const hotzones = {{ hotzone_data|safe }};
     hotzones.forEach(zone => {
         const color = zone.level === 3 ? 'red' : zone.level === 2 ? 'orange' : 'yellow';
@@ -69,19 +64,17 @@
             color: color,
             fillColor: color,
             fillOpacity: 0.2,
-            radius: zone.radius * 1000  // Convert km to meters
+            radius: zone.radius * 1000
         }).addTo(map).bindPopup(`
             <b>${zone.description}</b><br>
             <small>Approx. ${zone.radius}km radius</small>
         `);
     });
     
-    // Locate button
     document.getElementById('locate-btn').addEventListener('click', () => {
         map.locate({setView: true, maxZoom: 14});
     });
     
-    // Handle location found
     map.on('locationfound', (e) => {
         L.marker([e.latlng.lat, e.latlng.lng]).addTo(map)
             .bindPopup("Your Location").openPopup();

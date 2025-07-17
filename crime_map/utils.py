@@ -2,40 +2,45 @@ from math import radians, sin, cos, sqrt, atan2
 
 def calculate_distance(lat1, lon1, lat2, lon2):
     """
-    Calculate the great-circle distance between two points
-    on Earth (specified in decimal degrees) using Haversine formula.
-    Returns distance in kilometers.
+    Calculate distance between two points in kilometers
+    (Fallback if GIS functions not available)
     """
-    # Convert decimal degrees to radians 
-    lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
-    
-    # Haversine formula
-    dlat = lat2 - lat1
-    dlon = lon2 - lon1
-    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
-    c = 2 * atan2(sqrt(a), sqrt(1-a))
-    
-    # Radius of Earth in kilometers
-    R = 6371
-    return R * c
-
-def get_points_in_radius(latitude, longitude, radius_km, queryset):
-    """
-    Filter a queryset of location objects to find those within radius_km
-    of the given latitude/longitude point.
-    """
-    nearby = []
-    for obj in queryset:
-        distance = calculate_distance(latitude, longitude, 
-                                    obj.latitude, obj.longitude)
-        if distance <= radius_km:
-            nearby.append(obj)
-    return nearby
-
-def calculate_distance(lat1, lon1, lat2, lon2):
     try:
-        # Convert to float first
         lat1, lon1, lat2, lon2 = map(float, [lat1, lon1, lat2, lon2])
-        # Rest of calculation...
+        lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
+        
+        dlat = lat2 - lat1
+        dlon = lon2 - lon1
+        a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+        c = 2 * atan2(sqrt(a), sqrt(1-a))
+        
+        return 6371 * c  # Earth radius in km
     except (TypeError, ValueError):
         return float('inf')
+
+def get_crime_stats(center_point, radius_km):
+    """
+    Get crime statistics for an area
+    """
+    from django.contrib.gis.measure import D
+    from .models import SuspiciousPin
+    
+    stats = {
+        'total_reports': 0,
+        'recent_reports': 0,
+        'crime_types': {},
+        'time_distribution': {}
+    }
+    
+    # All reports in area
+    all_reports = SuspiciousPin.objects.filter(
+        location__distance_lte=(center_point, D(km=radius_km))
+    )
+    stats['total_reports'] = all_reports.count()
+    
+    # Recent reports (last 30 days)
+    recent_reports = all_reports.filter(
+        created_at__gte=timezone.now() - timedelta(days=30))
+    stats['recent_reports'] = recent_reports.count()
+    
+    return stats
