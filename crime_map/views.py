@@ -11,6 +11,33 @@ from django.utils import timezone
 from .forms import PinDropForm, QuickPinForm
 
 @login_required
+def pin_drop_location(request):
+    """View for the pin drop location page"""
+    if request.method == 'POST':
+        form = QuickPinForm(request.POST)
+        if form.is_valid():
+            pin = PinDrop(
+                user=request.user,
+                latitude=form.cleaned_data['latitude'],
+                longitude=form.cleaned_data['longitude'],
+                report_type=form.cleaned_data['report_type'],
+                message=form.cleaned_data['message'],
+                is_anonymous=True
+            )
+            pin.save()
+            check_hotzone_creation(pin)
+            messages.success(request, "Location pinned successfully!")
+            return redirect('crime_map')
+    else:
+        form = QuickPinForm()
+    
+    return render(request, 'crime_map/pin_drop_location.html', {
+        'form': form,
+        'default_lat': -26.2041,
+        'default_lng': 28.0473
+    })
+
+@login_required
 def pin_drop(request):
     """Detailed pin drop form"""
     last_pin = PinDrop.objects.filter(
@@ -35,7 +62,7 @@ def pin_drop(request):
     else:
         form = PinDropForm()
     
-    return render(request, 'crime_map/pin_drop.html', {
+    return render(request, 'crime_map/drop_pin.html', {
         'form': form,
         'default_lat': -26.2041,
         'default_lng': 28.0473

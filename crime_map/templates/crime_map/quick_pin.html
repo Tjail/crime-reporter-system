@@ -1,0 +1,167 @@
+{% extends 'landing/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card border-danger">
+        <div class="card-header bg-danger text-white">
+            <h3 class="mb-0">
+                <i class="fas fa-user-secret"></i> Anonymous Crime Report
+            </h3>
+            <p class="mb-0 small">Your safety is our priority - no location tracking</p>
+        </div>
+        
+        <div class="card-body">
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i> 
+                <strong>Safety Notice:</strong> Your current location is never accessed or stored. 
+                You manually select where the incident occurred.
+            </div>
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+            
+            <form method="POST" id="quick-report-form">
+                {% csrf_token %}
+                
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Where did it happen?</label>
+                    <div class="mb-3">
+                        <div id="safetyMap" style="height: 300px; border-radius: 8px;"></div>
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle"></i> Click anywhere on the map to select location
+                        </small>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <label class="form-label">Latitude</label>
+                            {{ form.latitude }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Longitude</label>
+                            {{ form.longitude }}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="form-label fw-bold">What type of incident?</label>
+                    <div class="btn-group-vertical w-100" role="group" aria-label="Incident type">
+                        {% for choice in form.report_type %}
+                            <div class="btn-group">
+                                {{ choice.tag }}
+                                <label for="{{ choice.id_for_label }}" 
+                                       class="btn btn-outline-danger text-start">
+                                    <i class="fas fa-{% cycle 'eye' 'wallet' 'exclamation-triangle' 'question-circle' %}"></i>
+                                    {{ choice.choice_label }}
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Brief description (optional)</label>
+                    {{ form.message }}
+                    <div class="form-text">
+                        <i class="fas fa-shield-alt"></i> Do not include personal details
+                    </div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-lock"></i> 
+                    <strong>This report is completely anonymous.</strong> 
+                    We don't store your device information or exact location.
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-danger btn-lg">
+                        <i class="fas fa-paper-plane"></i> Submit Anonymously
+                    </button>
+                    <a href="{% url 'crime_map:crime_map' %}" class="btn btn-outline-secondary">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Leaflet CSS & JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+
+<style>
+    /* Custom styling for safety */
+    #safetyMap {
+        border: 2px solid #dc3545;
+    }
+    .btn-group-vertical .btn {
+        margin-bottom: 0.25rem;
+    }
+    #id_message {
+        min-height: 100px;
+    }
+    .form-control[readonly] {
+        background-color: #f8f9fa;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const defaultLat = {{ default_lat }};
+    const defaultLng = {{ default_lng }};
+    const map = L.map('safetyMap').setView([defaultLat, defaultLng], 13);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+    
+    let marker = L.marker([defaultLat, defaultLng], {
+        draggable: true
+    }).addTo(map)
+      .bindPopup("Drag to exact location").openPopup();
+    
+    document.getElementById('id_latitude').value = defaultLat.toFixed(6);
+    document.getElementById('id_longitude').value = defaultLng.toFixed(6);
+    
+    marker.on('dragend', function(e) {
+        const { lat, lng } = e.target.getLatLng();
+        updatePositionFields(lat, lng);
+    });
+    
+    map.on('click', function(e) {
+        const { lat, lng } = e.latlng;
+        
+        if (marker) {
+            map.removeLayer(marker);
+        }
+        
+        marker = L.marker([lat, lng], {
+            draggable: true
+        }).addTo(map)
+          .bindPopup("Drag to adjust").openPopup();
+        
+        updatePositionFields(lat, lng);
+    });
+    
+    function updatePositionFields(lat, lng) {
+        document.getElementById('id_latitude').value = lat.toFixed(6);
+        document.getElementById('id_longitude').value = lng.toFixed(6);
+    }
+    
+    const form = document.getElementById('quick-report-form');
+    form.addEventListener('submit', function(e) {
+        const checkedRadio = document.querySelector('input[name="report_type"]:checked');
+        if (!checkedRadio) {
+            e.preventDefault();
+            alert('Please select what type of incident occurred');
+            return false;
+        }
+    });
+});
+</script>
+{% endblock %}
