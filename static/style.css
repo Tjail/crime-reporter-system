@@ -446,6 +446,46 @@ input, select, textarea {
   font-size: 1rem;
 }
 
+.btn-group-flex {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+/* Crime Type Button Styling */
+.btn-crime-type {
+    position: relative;
+    padding: 0.5rem 1rem;
+    border: 1px solid #dc3545;
+    color: #dc3545;
+    background-color: white;
+    transition: all 0.2s ease;
+}
+
+.btn-crime-type:hover {
+    background-color: #f8d7da;
+}
+
+.btn-crime-type input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.btn-crime-type input[type="checkbox"]:checked + span {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-crime-type span {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    width: 100%;
+    text-align: center;
+}
+
 #id_crime_types {
     list-style-type: none;
     padding: 0;
@@ -473,4 +513,15 @@ input, select, textarea {
     margin-right: 0.75rem;
     width: 1.2em;
     height: 1.2em;
+}
+
+.hashtag-link {
+    color: #0d6efd;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.hashtag-link:hover {
+    text-decoration: underline;
+    color: #0b5ed7;
 }

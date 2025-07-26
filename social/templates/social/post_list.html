@@ -31,24 +31,26 @@
                             {{ form|crispy }}
 
                             <div class="mb-3">
-                                <label class="form-label"><strong>Type of Crime*</strong></label>
-                                <div class="card p-3">
-                                    {{ form.crime_types }}
-                                    {% if form.crime_types.errors %}
-                                        <div class="alert alert-danger mt-2">
-                                            {{ form.crime_types.errors }}
-                                        </div>
-                                    {% endif %}
+                                <label class="form-label fw-bold">Select Type(s) of Crime*</label>
+                                <div class="btn-group d-flex flex-wrap" role="group" aria-label="Crime type buttons">
+                                    {% for checkbox in form.crime_types %}
+                                    <label class="btn btn-outline-danger m-1">
+                                        <input type="checkbox" 
+                                               name="{{ checkbox.data.name }}" 
+                                               value="{{ checkbox.data.value }}" 
+                                               {% if checkbox.data.selected %}checked{% endif %}
+                                               class="visually-hidden">
+                                        {{ checkbox.choice_label }}
+                                    </label>
+                                    {% endfor %}
                                 </div>
-                                <small class="text-muted">Select all that apply</small>
+                                {% if form.crime_types.errors %}
+                                <div class="alert alert-danger mt-2">
+                                    {{ form.crime_types.errors }}
+                                </div>
+                                {% endif %}
+                                <small class="text-muted">Click to select multiple crime types</small>
                             </div>
-                            {{ form.incident_date|as_crispy_field }}
-                            {{ form.incident_time|as_crispy_field }}
-                            {{ form.location_city|as_crispy_field }}
-                            {{ form.location_province|as_crispy_field }}
-                            {{ form.location_country|as_crispy_field }}
-                            {{ form.description|as_crispy_field }}
-                            {{ form.evidence|as_crispy_field }}
                             <h6>Suspect Identifiers (Optional)</h6>
                             <div id="identifier-formset">
                               {% for form in identifier_formset %}
