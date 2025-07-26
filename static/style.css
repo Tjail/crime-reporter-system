@@ -444,3 +444,33 @@ input, select, textarea {
   padding: 0.6rem;
   border-radius: 6px;
   font-size: 1rem;
+}
+
+#id_crime_types {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+#id_crime_types li {
+    margin-bottom: 0.5rem;
+}
+
+#id_crime_types li label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+}
+
+#id_crime_types li label:hover {
+    background-color: #f0f0f0;
+}
+
+#id_crime_types input[type="checkbox"] {
+    margin-right: 0.75rem;
+    width: 1.2em;
+    height: 1.2em;
+}

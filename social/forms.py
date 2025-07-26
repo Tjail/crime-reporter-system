@@ -18,8 +18,12 @@ class PostForm(forms.ModelForm):
 
     crime_types = forms.ModelMultipleChoiceField(
         queryset=CrimeType.objects.all(),
-        widget=forms.CheckboxSelectMultiple,
-        required=True
+        widget=forms.CheckboxSelectMultiple(attrs={
+            'class': 'crime-type-selector',
+            'id': 'crime-types'
+        }),
+        required=True,
+        label="Select all applicable crime types"
     )
 
     incident_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
