@@ -10,6 +10,8 @@ pip install -r requirements.txt
 # Collect static files
 python manage.py collectstatic --no-input
 
+python manage.py makemigrations --merge --no-input || true
+
 # Apply database migrations
 python manage.py migrate --no-input
 
@@ -19,13 +21,13 @@ from django.contrib.sites.models import Site
 try:
     site = Site.objects.get(pk=1)
     site.domain = 'crimewatch-reporting-system.onrender.com'
-    site.name = 'Crime Watch Reporting System'
+    site.name = 'CrimeWatch Reporting System'
     site.save()
 except Site.DoesNotExist:
     Site.objects.create(
         pk=1,
         domain='crimewatch-reporting-system.onrender.com',
-        name='Crime Watch Reporting System'
+        name='CrimeWatch Reporting System'
     )
 print("Site configured successfully")
 END

@@ -200,8 +200,8 @@ GEOS_LIBRARY_PATH = os.environ.get('GEOS_LIBRARY_PATH', '')
 LOGOUT_REDIRECT_URL = '/'  # After logout, go to home page
 
 # ### ADDED: More Allauth Settings for better authentication flow ###
-ACCOUNT_EMAIL_VERIFICATION = 'optional'  # Can be 'mandatory' in production
-ACCOUNT_AUTHENTICATION_METHOD = 'username_email'  # Allow login with username or email
+ACCOUNT_EMAIL_VERIFICATION = 'optional'  # mandatory in production
+ACCOUNT_LOGIN_METHODS = {'username', 'email'}  # Allow login with username or email
 ACCOUNT_USERNAME_REQUIRED = True
 ACCOUNT_SIGNUP_REDIRECT_URL = '/social/submit-verification/'  # After signup, go to verification
 
