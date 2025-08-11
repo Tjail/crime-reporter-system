@@ -4,7 +4,7 @@ from django.urls import reverse_lazy
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse, HttpResponseForbidden
 from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin
 from django.views import View
-from .models import Post, UserProfile, Tag, Identifier, UserOTP, Article, AccountType, VerificationRequest, APIAccessLog
+from .models import Post, UserProfile, Tag, Identifier, UserOTP, Article, AccountType, VerificationRequest, APIAccessLog, CrimeType
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.conf import settings
