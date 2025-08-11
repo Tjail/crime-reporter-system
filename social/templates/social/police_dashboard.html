@@ -1,0 +1,165 @@
+{% extends 'landing/base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .stat-card {
+        border-left: 4px solid;
+        transition: transform 0.3s ease;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+    .evidence-badge {
+        background: #dc3545;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+    }
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+    .status-reported { background: #ffc107; color: #000; }
+    .status-under_investigation { background: #17a2b8; color: #fff; }
+    .status-investigated { background: #28a745; color: #fff; }
+    .status-closed { background: #6c757d; color: #fff; }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="bg-danger text-white p-3 rounded">
+                <h3><i class="bi bi-shield-check"></i> Police Dashboard</h3>
+                <p class="mb-0">Officer: {{ request.user.username }}
+                {% if request.user.account_type.badge_number %}
+                    | Badge: {{ request.user.account_type.badge_number }}
+                    | Station: {{ request.user.account_type.station }}
+                {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card border-primary">
+                <div class="card-body">
+                    <h6 class="text-muted">Total Reports</h6>
+                    <h3 class="text-primary">{{ stats.total_reports }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card border-info">
+                <div class="card-body">
+                    <h6 class="text-muted">Under Investigation</h6>
+                    <h3 class="text-info">{{ stats.under_investigation }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card border-success">
+                <div class="card-body">
+                    <h6 class="text-muted">Investigated</h6>
+                    <h3 class="text-success">{{ stats.investigated }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card border-secondary">
+                <div class="card-body">
+                    <h6 class="text-muted">Closed Cases</h6>
+                    <h3 class="text-secondary">{{ stats.closed }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">Crime Reports</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Date Reported</th>
+                            <th>Crime Type</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            <th>Evidence</th>
+                            <th>Case #</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for post in posts %}
+                        <tr>
+                            <td>#{{ post.id }}</td>
+                            <td>{{ post.created_on|date:"Y-m-d H:i" }}</td>
+                            <td>
+                                {% for crime in post.crime_types.all %}
+                                    <span class="badge bg-danger">{{ crime.name }}</span>
+                                {% endfor %}
+                            </td>
+                            <td>{{ post.location_city }}, {{ post.location_province }}</td>
+                            <td>
+                                <span class="status-badge status-{{ post.investigation_status|lower }}">
+                                    {{ post.get_investigation_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if post.evidence %}
+                                    <span class="evidence-badge">
+                                        <i class="bi bi-file-earmark-lock"></i> Available
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">None</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ post.case_number|default:"-" }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'post_detail' post.pk %}" class="btn btn-outline-primary">
+                                        <i class="bi bi-eye"></i> View
+                                    </a>
+                                    <a href="{% url 'update_investigation' post.pk %}" class="btn btn-outline-success">
+                                        <i class="bi bi-pencil"></i> Update
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Crime Type Distribution</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for crime_stat in crime_stats|slice:":5" %}
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>{{ crime_stat.name }}</span>
+                            <span class="badge bg-primary rounded-pill">{{ crime_stat.report_count }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

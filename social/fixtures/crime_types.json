@@ -1,0 +1,17 @@
+[
+  {"model": "social.crimetype", "pk": 1, "fields": {"name": "Theft"}},
+  {"model": "social.crimetype", "pk": 2, "fields": {"name": "Assault"}},
+  {"model": "social.crimetype", "pk": 3, "fields": {"name": "Robbery"}},
+  {"model": "social.crimetype", "pk": 4, "fields": {"name": "Fraud"}},
+  {"model": "social.crimetype", "pk": 5, "fields": {"name": "Burglary"}},
+  {"model": "social.crimetype", "pk": 6, "fields": {"name": "Vandalism"}},
+  {"model": "social.crimetype", "pk": 7, "fields": {"name": "Hijacking"}},
+  {"model": "social.crimetype", "pk": 8, "fields": {"name": "Cybercrime"}},
+  {"model": "social.crimetype", "pk": 9, "fields": {"name": "Domestic Violence"}},
+  {"model": "social.crimetype", "pk": 10, "fields": {"name": "Sexual Assault"}},
+  {"model": "social.crimetype", "pk": 11, "fields": {"name": "Murder"}},
+  {"model": "social.crimetype", "pk": 12, "fields": {"name": "Kidnapping"}},
+  {"model": "social.crimetype", "pk": 13, "fields": {"name": "Drug-related"}},
+  {"model": "social.crimetype", "pk": 14, "fields": {"name": "Corruption"}},
+  {"model": "social.crimetype", "pk": 15, "fields": {"name": "Other"}}
+]

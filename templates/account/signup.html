@@ -4,36 +4,20 @@
 {% block head_title %}{% trans "Sign Up" %}{% endblock head_title %}
 
 {% block content %}
+<script>
+    window.location.href = "{% url 'account_type_signup' %}";
+</script>
+
 <div class="container my-5">
-  <div class="row justify-content-center">
-    <div class="col-md-10 col-lg-8 col-xl-6">
-      <div class="card shadow-lg border-0 rounded-4 p-4">
-        <h3 class="text-center mb-4 text-success">{% trans "Join CrimeReporter" %}</h3>
-        <p class="text-center text-muted mb-4">{% trans "Create an account to report crime, share info, and help others." %}</p>
-
-        <form method="post" action="{% url 'account_signup' %}">
-          {% csrf_token %}
-          {% for field in form %}
-            <div class="mb-3">
-              {{ field.label_tag }}
-              {{ field }}
-              {% if field.errors %}
-                <div class="text-danger small mt-1">{{ field.errors|striptags }}</div>
-              {% endif %}
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8 col-xl-6">
+            <div class="card shadow-lg border-0 rounded-4 p-4">
+                <p class="text-center">Redirecting to signup page...</p>
+                <p class="text-center">
+                    <a href="{% url 'account_type_signup' %}">Click here if not redirected</a>
+                </p>
             </div>
-          {% endfor %}
-
-          <button type="submit" class="btn btn-success w-100 py-2 fw-bold">
-            <i class="fas fa-user-plus me-1"></i> Sign Up
-          </button>
-          {{ redirect_field }}
-        </form>
-
-        <p class="text-center mt-4">
-          Already have an account? <a href="{% url 'account_login' %}">Log in</a>
-        </p>
-      </div>
+        </div>
     </div>
-  </div>
 </div>
 {% endblock content %}

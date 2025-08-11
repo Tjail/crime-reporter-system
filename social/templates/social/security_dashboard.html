@@ -1,0 +1,168 @@
+{% extends 'landing/base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .api-key-display {
+        font-family: 'Courier New', monospace;
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 5px;
+        word-break: break-all;
+    }
+    .subscription-badge {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 600;
+    }
+    .tier-basic { background: #e3f2fd; color: #1976d2; }
+    .tier-professional { background: #f3e5f5; color: #7b1fa2; }
+    .tier-enterprise { background: #fff3e0; color: #f57c00; }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="bg-warning text-dark p-3 rounded">
+                <h3><i class="bi bi-building-check"></i> Security Company Dashboard</h3>
+                <p class="mb-0">{{ account.company_name|default:request.user.username }}
+                {% if account.psira_number %}
+                    | PSIRA: {{ account.psira_number }}
+                {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-key"></i> API Access Configuration</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <label class="form-label">Your API Key:</label>
+                            <div class="api-key-display">
+                                {% if api_stats.api_key != 'Not generated' %}
+                                    {{ api_stats.api_key }}
+                                {% else %}
+                                    <span class="text-muted">No API key generated yet</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Actions:</label><br>
+                            <a href="{% url 'generate_api_key' %}" class="btn btn-primary">
+                                <i class="bi bi-arrow-clockwise"></i> Generate New Key
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-md-3">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6>API Calls Used</h6>
+                                    <h3>{{ api_stats.calls_used }} / {{ api_stats.calls_limit }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6>Subscription Tier</h6>
+                                    <span class="subscription-badge tier-{{ api_stats.subscription_tier|lower|default:'basic' }}">
+                                        {{ api_stats.subscription_tier|default:"None" }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6>Subscription Expiry</h6>
+                                    <p>{{ api_stats.subscription_expiry|date:"Y-m-d"|default:"N/A" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6>API Endpoint</h6>
+                                    <code>/api/crime-data/</code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Recent Crime Alerts in Your Area</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Crime Type</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for post in posts %}
+                        <tr>
+                            <td>{{ post.created_on|date:"Y-m-d H:i" }}</td>
+                            <td>
+                                {% for crime in post.crime_types.all %}
+                                    <span class="badge bg-danger">{{ crime.name }}</span>
+                                {% endfor %}
+                            </td>
+                            <td>{{ post.location_city }}, {{ post.location_province }}</td>
+                            <td>
+                                <span class="badge bg-secondary">{{ post.get_investigation_status_display }}</span>
+                            </td>
+                            <td>
+                                <a href="{% url 'post_detail' post.pk %}" class="btn btn-sm btn-outline-primary">View</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0">API Documentation</h5>
+        </div>
+        <div class="card-body">
+            <h6>Example API Request:</h6>
+            <pre class="bg-light p-3"><code>GET /api/crime-data/?api_key=YOUR_API_KEY</code></pre>
+            
+            <h6>Response Format:</h6>
+            <pre class="bg-light p-3"><code>{
+    "data": [
+        {
+            "id": 1,
+            "crime_types": ["Theft", "Assault"],
+            "location": "Pretoria, Gauteng",
+            "date": "2024-01-15",
+            "status": "REPORTED"
+        }
+    ],
+    "calls_remaining": 950
+}</code></pre>
+        </div>
+    </div>
+</div>
+{% endblock content %}

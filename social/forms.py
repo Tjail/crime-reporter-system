@@ -1,12 +1,83 @@
-from .models import Post, CrimeType, Identifier, Article
+from .models import Post, CrimeType, Identifier, Article, AccountType, VerificationRequest
 from django import forms
 from django.forms import formset_factory, BaseFormSet
-
+from django.contrib.auth.models import User
+from django.contrib.auth.forms import UserCreationForm
 
 class OTPVerificationForm(forms.Form):
     email = forms.EmailField()
     otp = forms.CharField(max_length=6)
 
+
+class AccountTypeSelectionForm(forms.Form):
+    account_type = forms.ChoiceField(
+        choices=AccountType.ACCOUNT_TYPE_CHOICES,
+        widget=forms.RadioSelect(attrs={'class': 'form-check-input'}),
+        label="Select Account Type"
+    )
+
+class CustomSignupForm(UserCreationForm):
+    email = forms.EmailField(required=True)
+    account_type = forms.ChoiceField(
+        choices=AccountType.ACCOUNT_TYPE_CHOICES,
+        widget=forms.RadioSelect(attrs={'class': 'form-check-input'}),
+        initial='CITIZEN',
+        label="Account Type"
+    )
+    
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'password1', 'password2', 'account_type')
+    
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.email = self.cleaned_data['email']
+        if commit:
+            user.save()
+            account_type = AccountType.objects.get(user=user)
+            account_type.account_type = self.cleaned_data['account_type']
+            account_type.save()
+        return user
+
+class PoliceVerificationForm(forms.ModelForm):
+    class Meta:
+        model = VerificationRequest
+        fields = ['police_badge_number', 'police_station', 'police_rank', 
+                  'id_document', 'proof_document']
+        widgets = {
+            'police_badge_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter your badge number'}),
+            'police_station': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter your station name'}),
+            'police_rank': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter your rank'}),
+        }
+        labels = {
+            'id_document': 'Upload Police ID',
+            'proof_document': 'Upload Station Letter/Appointment Letter',
+        }
+
+class SecurityCompanyVerificationForm(forms.ModelForm):
+    class Meta:
+        model = VerificationRequest
+        fields = ['company_name', 'company_registration', 'psira_number',
+                  'id_document', 'proof_document']
+        widgets = {
+            'company_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter company name'}),
+            'company_registration': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Company registration number'}),
+            'psira_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'PSIRA registration number'}),
+        }
+        labels = {
+            'id_document': 'Upload Company Registration Certificate',
+            'proof_document': 'Upload PSIRA Certificate',
+        }
+
+class InvestigationUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Post
+        fields = ['investigation_status', 'case_number', 'investigation_notes']
+        widgets = {
+            'investigation_status': forms.Select(attrs={'class': 'form-control'}),
+            'case_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Police case number'}),
+            'investigation_notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Investigation notes (private)'}),
+        }
 
 class PostForm(forms.ModelForm):
 

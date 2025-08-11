@@ -5,83 +5,171 @@
 
 {% block content %}
 <div class="container">
-     <div class="row mt-3">
-         <div class="col-auto">
+    <div class="row mt-3">
+        <div class="col-auto">
             <a href="{% url 'home' %}" class="btn btn-outline-dark btn-sm"><i class="bi bi-house-door"></i> Home</a>
-         </div>
-
-         <div class="col-auto">
-            <a href="{% url 'post_list' %}" class="btn btn-dark btn-sm"><i class="bi bi-arrow-left-circle"></i> Feed</a>
-         </div>
-     </div>
-
-    <div class="row justify-content-center mt-3">
-        <div class="col-md-5 col-sm-12 border-bottom">
-            <p class="text-muted small">
-                <strong>Anonymous User</strong> reported on <strong>{{ post.created_on|date:"Y-m-d H:i" }}</strong>
-                {% if request.user == post.author %}
-                    <a href="{% url 'post_edit' post.pk %}" class="edit-color"><i class="far fa-edit"></i></a>
-                    <a href="{% url 'post_delete' post.pk %}" class="edit-color"><i class="fas fa-trash"></i></a>
-                {% endif %}
-            </p>
-
-            {% if post.last_updated > post.created_on %}
-              <p class="text-muted small"><em>This report has been edited.</em></p>
-            {% endif %}
-
-            <div class="body">
-                <p>{{ post.description|linebreaksbr|link_hashtags }}</p>
-
-                {% if post.identifiers.count > 0 %}
-                    <p><strong>Reported Identifiers:</strong></p>
-                    <ul>
-                        {% for id in post.identifiers.all %}
-                            <li>
-                                {{ id.identifier_type }}: {{ id.value }}
-                                {% with id.value as identifier_value %}
-                                    {% with identifier_counts|get_item:identifier_value as id_count %}
-                                        {% if id_count > 1 %}
-                                            <span class="badge bg-info text-dark" title="This identifier appears in {{ id_count }} reports.">
-                                                🔗 {{ id_count }} Linked Report{{ id_count|pluralize }} —
-                                                <a href="{% url 'identifier_search' %}?query={{ identifier_value }}" class="text-dark"><u>View</u></a>
-                                            </span>
-                                        {% endif %}
-                                    {% endwith %}
-                                {% endwith %}
-                            </li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
-            </div>
         </div>
+        <div class="col-auto">
+            <a href="{% url 'post_list' %}" class="btn btn-dark btn-sm"><i class="bi bi-arrow-left-circle"></i> Feed</a>
+        </div>
+        {% if request.user.account_type.is_police %}
+        <div class="col-auto">
+            <a href="{% url 'police_dashboard' %}" class="btn btn-danger btn-sm"><i class="bi bi-shield-check"></i> Police Dashboard</a>
+        </div>
+        {% elif request.user.account_type.is_security_company %}
+        <div class="col-auto">
+            <a href="{% url 'security_dashboard' %}" class="btn btn-warning btn-sm"><i class="bi bi-building-check"></i> Security Dashboard</a>
+        </div>
+        {% endif %}
     </div>
 
-    {% if related_posts %}
-        <div class="row justify-content-center mt-4">
-            <div class="col-md-8">
-                <h5>Other reports also mentioning this suspect ({{ related_posts|length }} linked):</h5>
-                {% for related in related_posts %}
-                    <div class="card mb-3">
-                        <div class="card-body">
-                            <p class="text-muted small">
-                                Reported on {{ related.created_on|date:"Y-m-d H:i" }}
-                            </p>
+    <div class="row justify-content-center mt-3">
+        <div class="col-md-8 col-sm-12">
+            <div class="card">
+                <div class="card-body">
+                    <!-- Investigation Status (visible to all) -->
+                    {% if post.investigation_status != 'REPORTED' %}
+                    <div class="alert alert-info">
+                        <strong>Investigation Status:</strong> {{ post.get_investigation_status_display }}
+                        {% if post.case_number %}
+                            | <strong>Case #:</strong> {{ post.case_number }}
+                        {% endif %}
+                        {% if post.investigating_officer and request.user.account_type.is_police %}
+                            | <strong>Officer:</strong> {{ post.investigating_officer.username }}
+                        {% endif %}
+                    </div>
+                    {% endif %}
 
-                            {% for crime in related.crime_types.all %}
+                    <p class="text-muted small">
+                        <strong>Anonymous User</strong> reported on <strong>{{ post.created_on|date:"Y-m-d H:i" }}</strong>
+                        {% if request.user == post.author %}
+                            <a href="{% url 'post_edit' post.pk %}" class="edit-color"><i class="far fa-edit"></i></a>
+                            <a href="{% url 'post_delete' post.pk %}" class="edit-color"><i class="fas fa-trash"></i></a>
+                        {% endif %}
+                    </p>
+
+                    {% if post.last_updated > post.created_on %}
+                        <p class="text-muted small"><em>This report has been edited.</em></p>
+                    {% endif %}
+
+                    <!-- Crime Types -->
+                    {% if post.crime_types.all %}
+                        <p>
+                            {% for crime in post.crime_types.all %}
                                 <span class="badge bg-danger">{{ crime.name }}</span>
                             {% endfor %}
+                        </p>
+                    {% endif %}
 
-                            <p><strong>When:</strong> {{ related.incident_date }} at {{ related.incident_time }}</p>
-                            <p><strong>Where:</strong> {{ related.location_city }}, {{ related.location_province }}, {{ related.location_country }}</p>
-
-                            <p>{{ related.description|truncatewords:40 }}</p>
-                            <a href="{% url 'post_detail' related.pk %}">View Full Report</a>
-                        </div>
-
+                    <!-- Incident Details -->
+                    <div class="mb-3">
+                        <p><strong>When:</strong> {{ post.incident_date }} at {{ post.incident_time }}</p>
+                        <p><strong>Where:</strong> {{ post.location_city }}, {{ post.location_province }}, {{ post.location_country }}</p>
                     </div>
-                {% endfor %}
+
+                    <!-- Description -->
+                    <div class="body mb-3">
+                        <p><strong>Description:</strong></p>
+                        <p>{{ post.description|linebreaksbr|link_hashtags }}</p>
+                    </div>
+
+                    <!-- Evidence Section - Only for Police -->
+                    {% if can_view_evidence and post.evidence %}
+                    <div class="alert alert-danger">
+                        <h6 class="alert-heading"><i class="bi bi-file-earmark-lock"></i> Confidential Evidence (Police Only)</h6>
+                        <p>This evidence is only visible to verified law enforcement officers.</p>
+                        <a href="{{ post.evidence.url }}" target="_blank" class="btn btn-sm btn-danger">
+                            <i class="bi bi-download"></i> Download Evidence
+                        </a>
+                    </div>
+                    {% elif post.evidence and not can_view_evidence %}
+                    <div class="alert alert-secondary">
+                        <i class="bi bi-lock"></i> Evidence submitted with this report (visible to police only)
+                    </div>
+                    {% endif %}
+
+                    <!-- Investigation Notes - Only for Police -->
+                    {% if request.user.account_type.is_police and post.investigation_notes %}
+                    <div class="alert alert-warning">
+                        <h6 class="alert-heading"><i class="bi bi-clipboard-check"></i> Investigation Notes (Police Only)</h6>
+                        <p>{{ post.investigation_notes|linebreaksbr }}</p>
+                        <small class="text-muted">Last updated: {{ post.investigation_updated|date:"Y-m-d H:i" }}</small>
+                    </div>
+                    {% endif %}
+
+                    <!-- Public Image (if any) -->
+                    {% if post.image %}
+                        <div class="mb-3">
+                            <img src="{{ post.image.url }}" class="img-fluid" alt="Crime scene image"/>
+                        </div>
+                    {% endif %}
+
+                    <!-- Identifiers -->
+                    {% if post.identifiers.count > 0 %}
+                        <div class="mb-3">
+                            <p><strong>Reported Identifiers:</strong></p>
+                            <ul>
+                                {% for id in post.identifiers.all %}
+                                    <li>
+                                        {{ id.identifier_type }}: {{ id.value }}
+                                        {% with id.value as identifier_value %}
+                                            {% with identifier_counts|get_item:identifier_value as id_count %}
+                                                {% if id_count > 1 %}
+                                                    <span class="badge bg-info text-dark" title="This identifier appears in {{ id_count }} reports.">
+                                                        🔗 {{ id_count }} Linked Report{{ id_count|pluralize }} —
+                                                        <a href="{% url 'identifier_search' %}?query={{ identifier_value }}" class="text-dark"><u>View</u></a>
+                                                    </span>
+                                                {% endif %}
+                                            {% endwith %}
+                                        {% endwith %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex justify-content-between mt-3">
+                        <div>
+                            {% if request.user.account_type.is_police %}
+                                <a href="{% url 'update_investigation' post.pk %}" class="btn btn-primary">
+                                    <i class="bi bi-pencil-square"></i> Update Investigation
+                                </a>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <a href="{% url 'post_list' %}" class="btn btn-secondary">Back to Feed</a>
+                        </div>
+                    </div>
+                </div>
             </div>
+
+            <!-- Related Posts -->
+            {% if related_posts %}
+                <div class="mt-4">
+                    <h5>Other reports with matching identifiers ({{ related_posts|length }} linked):</h5>
+                    {% for related in related_posts %}
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <p class="text-muted small">
+                                    Reported on {{ related.created_on|date:"Y-m-d H:i" }}
+                                </p>
+
+                                {% for crime in related.crime_types.all %}
+                                    <span class="badge bg-danger">{{ crime.name }}</span>
+                                {% endfor %}
+
+                                <p><strong>When:</strong> {{ related.incident_date }} at {{ related.incident_time }}</p>
+                                <p><strong>Where:</strong> {{ related.location_city }}, {{ related.location_province }}, {{ related.location_country }}</p>
+
+                                <p>{{ related.description|truncatewords:40 }}</p>
+                                <a href="{% url 'post_detail' related.pk %}">View Full Report</a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
         </div>
-    {% endif %}
+    </div>
 </div>
 {% endblock content %}

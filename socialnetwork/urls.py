@@ -19,14 +19,17 @@ from django.urls import path, include
 from landing.views import custom_redirect
 from django.conf import settings
 from django.conf.urls.static import static
-
+from social.views import AccountTypeSignupView
 
 urlpatterns = [
     path('admin-go-hideandseek/', admin.site.urls),
     path('', include('landing.urls')),
+    path('accounts/signup/', AccountTypeSignupView.as_view(), name='account_type_signup'),
     path('accounts/', include('allauth.urls')),
     path('social/', include('social.urls')),
     path('accounts/profile/', custom_redirect, name='custom_redirect'),
 ]
+
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -1,0 +1,55 @@
+{% extends 'landing/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0"><i class="bi bi-building-check"></i> Security Company Verification</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> Please provide your company registration details for verification. Approved companies get API access and analytics features.
+                    </div>
+                    
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Company Name *</label>
+                            {{ form.company_name }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Company Registration Number *</label>
+                            {{ form.company_registration }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">PSIRA Registration Number *</label>
+                            {{ form.psira_number }}
+                            <small class="text-muted">Private Security Industry Regulatory Authority number</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">{{ form.id_document.label }} *</label>
+                            {{ form.id_document }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">{{ form.proof_document.label }} *</label>
+                            {{ form.proof_document }}
+                        </div>
+                        
+                        <button type="submit" class="btn btn-warning text-dark w-100">
+                            <i class="bi bi-check-circle"></i> Submit for Verification
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

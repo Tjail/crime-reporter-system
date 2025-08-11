@@ -1,0 +1,56 @@
+{% extends 'landing/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0"><i class="bi bi-shield-check"></i> Police Officer Verification</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> Please provide your official police credentials for verification. This process typically takes 24-48 hours.
+                    </div>
+                    
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Badge Number *</label>
+                            {{ form.police_badge_number }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Police Station *</label>
+                            {{ form.police_station }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Rank *</label>
+                            {{ form.police_rank }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">{{ form.id_document.label }} *</label>
+                            {{ form.id_document }}
+                            <small class="text-muted">Upload a clear photo of your police ID</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">{{ form.proof_document.label }} *</label>
+                            {{ form.proof_document }}
+                            <small class="text-muted">Upload official station letter or appointment document</small>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-danger w-100">
+                            <i class="bi bi-check-circle"></i> Submit for Verification
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
