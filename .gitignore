@@ -35,6 +35,20 @@ MANIFEST
 *.manifest
 *.spec
 
+# Django media files (uploaded files)
+media/
+uploads/
+
+# Django collected static files
+staticfiles/
+
+# Django debug log
+debug.log
+
+# Secret keys and credentials
+secrets.json
+.secrets/
+
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
