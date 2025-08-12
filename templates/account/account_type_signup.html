@@ -6,42 +6,49 @@
 
 {% block inner_content %}
 <style>
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+    }
+    
+    .signup-wrapper {
+        background: white;
+        min-height: 100vh;
+        padding: 3rem 0;
+    }
+    
     .account-type-section {
         background: #f8f9fa;
-        border-radius: 10px;
-        padding: 2rem 1rem;
-        margin-bottom: 2rem;
+        border-radius: 20px;
+        padding: 3rem;
+        margin-bottom: 3rem;
     }
     
     .account-type-card {
         cursor: pointer;
         transition: all 0.3s ease;
-        border: 3px solid #dee2e6;
+        border: 3px solid #e9ecef;
         background: white;
-        height: 100%;
-        min-height: 280px;
+        border-radius: 15px;
+        overflow: hidden;
     }
     
     .account-type-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
         border-color: #0d6efd;
     }
     
     .account-type-card.selected {
         border-color: #0d6efd;
         background: linear-gradient(to bottom, #f0f8ff, #ffffff);
-        box-shadow: 0 10px 25px rgba(13, 110, 253, 0.2);
-    }
-    
-    .account-type-card .card-body {
-        padding: 1.5rem;
+        box-shadow: 0 15px 35px rgba(13, 110, 253, 0.15);
     }
     
     .account-icon {
-        width: 80px;
-        height: 80px;
-        margin: 0 auto 1rem;
+        width: 90px;
+        height: 90px;
+        margin: 0 auto 1.5rem;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -53,195 +60,199 @@
     .police-icon { background: #ffebee; color: #c62828; }
     .security-icon { background: #fff3e0; color: #f57c00; }
     
-    .badge-feature {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        display: inline-block;
-        margin-bottom: 0.5rem;
-    }
-    
     .feature-list {
         list-style: none;
         padding: 0;
-        margin: 1rem 0;
+        margin: 1.5rem 0;
     }
     
     .feature-list li {
-        padding: 0.5rem 0;
-        font-size: 0.95rem;
-        display: flex;
-        align-items: center;
+        padding: 0.6rem 0;
+        font-size: 1rem;
     }
     
     .feature-list i {
         color: #28a745;
-        margin-right: 0.5rem;
-        font-size: 1.1rem;
-    }
-    
-    .radio-selector {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        transform: scale(1.5);
+        margin-right: 0.8rem;
+        font-size: 1.2rem;
     }
     
     .form-section {
         background: white;
-        padding: 2rem;
-        border-radius: 10px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        padding: 3rem;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     }
     
-    @media (max-width: 768px) {
-        .account-type-card {
-            margin-bottom: 1rem;
-        }
+    .form-control, .form-select {
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        border-radius: 10px;
+    }
+    
+    .radio-selector {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        transform: scale(1.5);
+        z-index: 10;
     }
 </style>
 
-<div class="container">
-    <div class="text-center mb-4">
-        <h2 class="fw-bold">Create Your Account</h2>
-        <p class="text-muted lead">Join South Africa's anonymous crime reporting platform</p>
-    </div>
+<div class="signup-wrapper">
+    <div class="container-fluid px-4">
+        <div class="row justify-content-center">
+            <div class="col-12 col-xxl-10">
+                
+                <div class="text-center mb-5">
+                    <h1 class="display-4 fw-bold mb-3">Create Your Account</h1>
+                    <p class="lead text-muted">Join South Africa's Premier Anonymous Crime Reporting Platform</p>
+                </div>
 
-    <form method="post" action="{% url 'account_type_signup' %}">
-        {% csrf_token %}
-        
-        <div class="account-type-section">
-            <h4 class="text-center mb-4">Step 1: Choose Your Account Type</h4>
-            
-            <div class="row g-4">
-                <div class="col-lg-4">
-                    <div class="card account-type-card position-relative" onclick="selectAccountType('CITIZEN')">
-                        <input type="radio" name="account_type" value="CITIZEN" class="radio-selector" id="citizen_radio" checked>
-                        <div class="card-body text-center">
-                            <div class="account-icon citizen-icon">
-                                <i class="fas fa-user"></i>
+                <form method="post" action="{% url 'account_type_signup' %}">
+                    {% csrf_token %}
+                    
+                    <!-- Account Type Selection - FULL WIDTH -->
+                    <div class="account-type-section">
+                        <h2 class="text-center mb-5">Step 1: Choose Your Account Type</h2>
+                        
+                        <div class="row g-4">
+                            <!-- Citizen Account -->
+                            <div class="col-lg-4">
+                                <div class="card account-type-card position-relative h-100" onclick="selectAccountType('CITIZEN')">
+                                    <input type="radio" name="account_type" value="CITIZEN" class="radio-selector" id="citizen_radio" checked>
+                                    <div class="card-body p-4 text-center">
+                                        <div class="account-icon citizen-icon">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                        <h4 class="card-title mb-3">Citizen Reporter</h4>
+                                        <p class="text-muted mb-4">For individuals who want to report crimes and stay informed about safety in their area</p>
+                                        
+                                        <ul class="feature-list text-start">
+                                            <li><i class="fas fa-check-circle"></i> Report crimes anonymously</li>
+                                            <li><i class="fas fa-check-circle"></i> View crime alerts in your area</li>
+                                            <li><i class="fas fa-check-circle"></i> Track your submitted reports</li>
+                                            <li><i class="fas fa-check-circle"></i> Access safety resources</li>
+                                            <li><i class="fas fa-check-circle"></i> Receive crime pattern alerts</li>
+                                        </ul>
+                                        
+                                        <div class="mt-4">
+                                            <span class="badge bg-success px-3 py-2">Quick Email Verification</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <h5 class="card-title mb-3">Citizen Reporter</h5>
-                            <p class="text-muted small mb-3">For individuals reporting crimes and staying informed about safety in their area</p>
-                            
-                            <ul class="feature-list text-start">
-                                <li><i class="fas fa-check-circle"></i> Report crimes anonymously</li>
-                                <li><i class="fas fa-check-circle"></i> View crime alerts in your area</li>
-                                <li><i class="fas fa-check-circle"></i> Track your reports</li>
-                                <li><i class="fas fa-check-circle"></i> Access safety resources</li>
-                            </ul>
-                            
-                            <div class="mt-3">
-                                <span class="badge bg-success">Email Verification Only</span>
+
+                            <!-- Police Account -->
+                            <div class="col-lg-4">
+                                <div class="card account-type-card position-relative h-100" onclick="selectAccountType('POLICE')">
+                                    <input type="radio" name="account_type" value="POLICE" class="radio-selector" id="police_radio">
+                                    <div class="card-body p-4 text-center">
+                                        <div class="account-icon police-icon">
+                                            <i class="fas fa-shield-alt"></i>
+                                        </div>
+                                        <h4 class="card-title mb-3">Police Officer</h4>
+                                        <p class="text-muted mb-4">For verified law enforcement officers with full investigation privileges</p>
+                                        
+                                        <ul class="feature-list text-start">
+                                            <li><i class="fas fa-check-circle"></i> View submitted evidence files</li>
+                                            <li><i class="fas fa-check-circle"></i> Update investigation status</li>
+                                            <li><i class="fas fa-check-circle"></i> Manage case numbers</li>
+                                            <li><i class="fas fa-check-circle"></i> Access complete reports</li>
+                                            <li><i class="fas fa-check-circle"></i> Add investigation notes</li>
+                                        </ul>
+                                        
+                                        <div class="mt-4">
+                                            <span class="badge bg-danger px-3 py-2">24-48 Hour Verification</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Security Company -->
+                            <div class="col-lg-4">
+                                <div class="card account-type-card position-relative h-100" onclick="selectAccountType('SECURITY')">
+                                    <input type="radio" name="account_type" value="SECURITY" class="radio-selector" id="security_radio">
+                                    <div class="card-body p-4 text-center">
+                                        <div class="account-icon security-icon">
+                                            <i class="fas fa-building"></i>
+                                        </div>
+                                        <h4 class="card-title mb-3">Security Company</h4>
+                                        <p class="text-muted mb-4">For registered private security companies needing crime data access</p>
+                                        
+                                        <ul class="feature-list text-start">
+                                            <li><i class="fas fa-check-circle"></i> API access for integration</li>
+                                            <li><i class="fas fa-check-circle"></i> Real-time crime alerts</li>
+                                            <li><i class="fas fa-check-circle"></i> Analytics dashboard</li>
+                                            <li><i class="fas fa-check-circle"></i> Bulk data exports</li>
+                                            <li><i class="fas fa-check-circle"></i> Custom alert zones</li>
+                                        </ul>
+                                        
+                                        <div class="mt-4">
+                                            <span class="badge bg-warning text-dark px-3 py-2">PSIRA Registration Required</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="col-lg-4">
-                    <div class="card account-type-card position-relative" onclick="selectAccountType('POLICE')">
-                        <input type="radio" name="account_type" value="POLICE" class="radio-selector" id="police_radio">
-                        <div class="card-body text-center">
-                            <div class="account-icon police-icon">
-                                <i class="fas fa-shield-alt"></i>
-                            </div>
-                            <h5 class="card-title mb-2">Police Officer</h5>
-                            <span class="badge-feature">Verification Required</span>
-                            <p class="text-muted small mb-3">For verified law enforcement officers with investigation privileges</p>
-                            
-                            <ul class="feature-list text-start">
-                                <li><i class="fas fa-check-circle"></i> View submitted evidence</li>
-                                <li><i class="fas fa-check-circle"></i> Update investigation status</li>
-                                <li><i class="fas fa-check-circle"></i> Manage case numbers</li>
-                                <li><i class="fas fa-check-circle"></i> Access full reports</li>
-                            </ul>
-                            
-                            <div class="mt-3">
-                                <span class="badge bg-danger">Badge & Station Verification</span>
+                    <div class="row justify-content-center">
+                        <div class="col-lg-8">
+                            <div class="form-section">
+                                <h2 class="text-center mb-5">Step 2: Account Information</h2>
+                                
+                                {% if form.errors %}
+                                    <div class="alert alert-danger">
+                                        <h6>Please correct the following errors:</h6>
+                                        {{ form.errors }}
+                                    </div>
+                                {% endif %}
+
+                                <div class="row g-4">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">Username</label>
+                                         {{ form.username|as_crispy_field }}
+                                        <small class="text-muted">Your identity will always remain anonymous</small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">Email Address</label>
+                                         {{ form.email|as_crispy_field }}
+                                        <small class="text-muted">For verification and important updates</small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">Password</label>
+                                         {{ form.password1|as_crispy_field }}
+                                        <small class="text-muted">Minimum 8 characters</small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">Confirm Password</label>
+                                         {{ form.password2|as_crispy_field }}
+                                        <small class="text-muted">Re-enter your password</small>
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-info mt-4">
+                                    <i class="fas fa-info-circle"></i> <strong>Verification:</strong>
+                                    <span id="verification-text">Citizen accounts require email verification only.</span>
+                                </div>
+
+                                <button type="submit" class="btn btn-success btn-lg w-100 py-3 fw-bold mt-4">
+                                    <i class="fas fa-user-plus me-2"></i> Create Account
+                                </button>
                             </div>
                         </div>
                     </div>
-                </div>
+                </form>
 
-                <div class="col-lg-4">
-                    <div class="card account-type-card position-relative" onclick="selectAccountType('SECURITY')">
-                        <input type="radio" name="account_type" value="SECURITY" class="radio-selector" id="security_radio">
-                        <div class="card-body text-center">
-                            <div class="account-icon security-icon">
-                                <i class="fas fa-building"></i>
-                            </div>
-                            <h5 class="card-title mb-2">Security Company</h5>
-                            <span class="badge-feature">Business Account</span>
-                            <p class="text-muted small mb-3">For registered private security companies needing crime data</p>
-                            
-                            <ul class="feature-list text-start">
-                                <li><i class="fas fa-check-circle"></i> API access for integration</li>
-                                <li><i class="fas fa-check-circle"></i> Real-time crime alerts</li>
-                                <li><i class="fas fa-check-circle"></i> Analytics dashboard</li>
-                                <li><i class="fas fa-check-circle"></i> Bulk data exports</li>
-                            </ul>
-                            
-                            <div class="mt-3">
-                                <span class="badge bg-warning text-dark">PSIRA Registration Required</span>
-                            </div>
-                        </div>
-                    </div>
+                <div class="text-center mt-5">
+                    <p class="mb-3">Already have an account?</p>
+                    <a href="{% url 'account_login' %}" class="btn btn-outline-primary btn-lg px-5">Sign In Instead</a>
+                    <a href="{% url 'home' %}" class="btn btn-outline-secondary btn-lg px-5 ms-3">Back to Home</a>
                 </div>
+                
             </div>
         </div>
-
-        <div class="form-section">
-            <h4 class="text-center mb-4">Step 2: Account Information</h4>
-            
-            {% if form.errors %}
-                <div class="alert alert-danger">
-                    <h6>Please correct the following errors:</h6>
-                    {{ form.errors }}
-                </div>
-            {% endif %}
-
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label fw-bold">Username</label>
-                    {{ form.username|as_crispy_field }}
-                    <small class="text-muted">This will be kept private and never shown publicly</small>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label fw-bold">Email Address</label>
-                    {{ form.email|as_crispy_field }}
-                    <small class="text-muted">We'll send verification codes here</small>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label fw-bold">Password</label>
-                    {{ form.password1|as_crispy_field }}
-                    <small class="text-muted">At least 8 characters</small>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label fw-bold">Confirm Password</label>
-                    {{ form.password2|as_crispy_field }}
-                    <small class="text-muted">Enter the same password again</small>
-                </div>
-            </div>
-
-            <div class="alert alert-info mt-4" id="verification-notice">
-                <i class="fas fa-info-circle"></i> <strong>Verification Process:</strong>
-                <span id="verification-text">Citizen accounts require email verification via OTP code.</span>
-            </div>
-
-            <button type="submit" class="btn btn-success btn-lg w-100 py-3 fw-bold">
-                <i class="fas fa-user-plus me-2"></i> Create Account
-            </button>
-        </div>
-    </form>
-
-    <div class="text-center mt-4">
-        <p class="mb-0">Already have an account?</p>
-        <a href="{% url 'account_login' %}" class="btn btn-outline-primary mt-2">Sign In Instead</a>
     </div>
 </div>
 
@@ -257,11 +268,11 @@
         const text = document.getElementById('verification-text');
         
         if (type === 'POLICE') {
-            text.innerHTML = '<strong>Police officers</strong> must provide badge number, station details, and official documentation. Verification typically takes 24-48 hours.';
+            text.innerHTML = 'Police officers must provide badge number and official station documentation. Verification typically takes 24-48 hours.';
         } else if (type === 'SECURITY') {
-            text.innerHTML = '<strong>Security companies</strong> must provide PSIRA registration, company documents, and proof of operations. Access to API and analytics will be granted after verification.';
+            text.innerHTML = 'Security companies must provide PSIRA registration and company documents. API access will be granted after verification.';
         } else {
-            text.innerHTML = '<strong>Citizens</strong> only need to verify their email address with a one-time code. You can start reporting immediately after verification.';
+            text.innerHTML = 'Citizen accounts require email verification only. You can start reporting immediately after email confirmation.';
         }
     }
     

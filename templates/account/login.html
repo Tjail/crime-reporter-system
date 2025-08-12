@@ -1,39 +1,116 @@
+<!-- This file is templates/account/login.html -->
 {% extends "account/base_entrance.html" %}
 {% load i18n %}
+{% load crispy_forms_tags %}
 
 {% block head_title %}{% trans "Sign In" %}{% endblock head_title %}
 
-{% block content %}
-<div class="container my-5">
-  <div class="row justify-content-center">
-    <div class="col-md-10 col-lg-8 col-xl-6">
-      <div class="card shadow-lg border-0 rounded-4 p-4">
-        <h3 class="text-center mb-4 text-primary">{% trans "Welcome Back" %}</h3>
-        <p class="text-center text-muted mb-4">{% trans "Log in to report crime, search reports, or stay informed." %}</p>
+{% block inner_content %}
+<style>
+    .login-wrapper {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 3rem 0;
+    }
+    
+    .login-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        overflow: hidden;
+    }
+    
+    .login-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem;
+        text-align: center;
+        color: white;
+    }
+    
+    .login-body {
+        padding: 3rem;
+    }
+    
+    .form-control {
+        padding: 0.875rem 1rem;
+        font-size: 1rem;
+        border-radius: 10px;
+        border: 2px solid #e9ecef;
+    }
+    
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+</style>
 
-        <form method="post" action="{% url 'account_login' %}">
-          {% csrf_token %}
-          {% for field in form %}
-            <div class="mb-3">
-              {{ field.label_tag }}
-              {{ field }}
-              {% if field.errors %}
-                <div class="text-danger small mt-1">{{ field.errors|striptags }}</div>
-              {% endif %}
+<div class="login-wrapper">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5 col-xl-4">
+                <div class="login-card">
+                    <div class="login-header">
+                        <i class="fas fa-shield-alt fa-3x mb-3"></i>
+                        <h2 class="mb-0">Welcome Back</h2>
+                    </div>
+                    
+                    <div class="login-body">
+                        <p class="text-center text-muted mb-4">Sign in to access your crime reporting dashboard</p>
+
+                        <form method="post" action="{% url 'account_login' %}">
+                            {% csrf_token %}
+                            
+                            {% if form.non_field_errors %}
+                                <div class="alert alert-danger">
+                                    {{ form.non_field_errors }}
+                                </div>
+                            {% endif %}
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Username or Email</label>
+                                {{ form.login|as_crispy_field }}
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Password</label>
+                                {{ form.password|as_crispy_field }}
+                            </div>
+                            
+                            {% if form.remember %}
+                            <div class="form-check mb-4">
+                                {{ form.remember }} 
+                                <label class="form-check-label" for="{{ form.remember.id_for_label }}">
+                                    Remember me
+                                </label>
+                            </div>
+                            {% endif %}
+
+                            <button type="submit" class="btn btn-primary btn-lg w-100 py-3 fw-bold">
+                                <i class="fas fa-sign-in-alt me-2"></i> Sign In
+                            </button>
+                        </form>
+
+                        <hr class="my-4">
+                        
+                        <div class="text-center">
+                            <p class="mb-3">Don't have an account yet?</p>
+                            <a href="{% url 'account_type_signup' %}" class="btn btn-success btn-lg w-100 py-2">
+                                <i class="fas fa-user-plus me-2"></i> Create New Account
+                            </a>
+                        </div>
+                        
+                        <div class="text-center mt-3">
+                            <a href="{% url 'home' %}" class="text-muted">
+                                <i class="fas fa-arrow-left me-1"></i> Back to Home
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
-          {% endfor %}
-
-          <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">
-            <i class="fas fa-sign-in-alt me-1"></i> Sign In
-          </button>
-          {{ redirect_field }}
-        </form>
-
-        <p class="text-center mt-4">
-          Don’t have an account? <a href="{% url 'account_signup' %}">Sign up</a>
-        </p>
-      </div>
+        </div>
     </div>
-  </div>
 </div>
-{% endblock content %}
+{% endblock inner_content %}

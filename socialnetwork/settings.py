@@ -1,3 +1,4 @@
+#this file is socialnetwork/settings.py
 """
 Django settings for socialnetwork project.
 
