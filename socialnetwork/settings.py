@@ -159,7 +159,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'en-za'
 
 TIME_ZONE = 'Africa/Johannesburg'
 
@@ -194,17 +194,21 @@ PAYFAST_MERCHANT_KEY = os.environ.get('PAYFAST_MERCHANT_KEY', '')
 
 LOGIN_REDIRECT_URL = '/social/'
 ACCOUNT_EMAIL_REQUIRED = True
+DEFAULT_FROM_EMAIL = 'noreply@crimewatch.co.za'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 GDAL_LIBRARY_PATH = os.environ.get('GDAL_LIBRARY_PATH', '')
 GEOS_LIBRARY_PATH = os.environ.get('GEOS_LIBRARY_PATH', '')
 
 LOGOUT_REDIRECT_URL = '/'  # After logout, go to home page
 
-# ### ADDED: More Allauth Settings for better authentication flow ###
 ACCOUNT_EMAIL_VERIFICATION = 'optional'  # mandatory in production
 ACCOUNT_LOGIN_METHODS = {'username', 'email'}  # Allow login with username or email
 ACCOUNT_USERNAME_REQUIRED = True
-ACCOUNT_SIGNUP_REDIRECT_URL = '/social/submit-verification/'  # After signup, go to verification
+ACCOUNT_SIGNUP_REDIRECT_URL = '/accounts/profile/'  # After signup, use custom redirect
+ACCOUNT_LOGOUT_REDIRECT_URL = '/'  # After logout, go to home page
+
+CSRF_TRUSTED_ORIGINS = ['https://crimewatch-reporting-system.onrender.com']
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # ### ADDED: File Upload Settings for evidence files ###
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10MB max file size

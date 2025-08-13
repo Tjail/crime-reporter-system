@@ -1,3 +1,4 @@
+#this file is social/views.py
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q, Count
 from django.urls import reverse_lazy
@@ -69,16 +70,34 @@ class AccountTypeSignupView(View):
     def post(self, request, *args, **kwargs):
         form = CustomSignupForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            account_type = form.cleaned_data['account_type']
+            user = form.save(commit=False)
+            # Only deactivate non-citizen accounts
+            account_type_value = form.cleaned_data['account_type']
             
-            if account_type == AccountType.CITIZEN:
-                send_otp_email(user)
-                messages.info(request, "Please check your email for OTP verification.")
-                return redirect('verify_otp')
-            else:
-                messages.info(request, f"Please complete the verification process for {account_type} account.")
-                return redirect('submit_verification')
+            if account_type_value != AccountType.CITIZEN:
+                user.is_active = False  # Deactivate until verified
+            
+            user.save()
+            
+            # Update account type
+            account_type = AccountType.objects.get(user=user)
+            account_type.account_type = account_type_value
+            account_type.save()
+            
+            # Handle different account types
+            if account_type.account_type == AccountType.CITIZEN:
+                messages.success(request, "Account created successfully! You can now login.")
+                return redirect('account_login')
+            elif account_type.account_type == AccountType.POLICE:
+                messages.info(request, "Account created! Please login to complete police verification.")
+                user.is_active = True
+                user.save()
+                return redirect('account_login')
+            elif account_type.account_type == AccountType.SECURITY_COMPANY:
+                messages.info(request, "Account created! Please login to complete company verification.")
+                user.is_active = True
+                user.save()
+                return redirect('account_login')
         
         return render(request, 'account/account_type_signup.html', {'form': form})
 
@@ -131,7 +150,14 @@ class VerificationPendingView(LoginRequiredMixin, View):
     
 class PoliceDashboardView(LoginRequiredMixin, UserPassesTestMixin, View):
     def test_func(self):
-        return hasattr(self.request.user, 'account_type') and self.request.user.account_type.is_police()
+        if not hasattr(self.request.user, 'account_type'):
+            return False
+        account = self.request.user.account_type
+        return account.account_type == AccountType.POLICE and account.is_verified
+    
+    def handle_no_permission(self):
+        messages.error(self.request, "You must be a verified police officer to access this page.")
+        return redirect('post_list')
     
     def get(self, request, *args, **kwargs):
         posts = Post.objects.all().order_by('-created_on')
@@ -181,11 +207,17 @@ class UpdateInvestigationView(LoginRequiredMixin, UserPassesTestMixin, View):
 
 class SecurityDashboardView(LoginRequiredMixin, UserPassesTestMixin, View):
     def test_func(self):
-        return hasattr(self.request.user, 'account_type') and self.request.user.account_type.is_security_company()
+        if not hasattr(self.request.user, 'account_type'):
+            return False
+        account = self.request.user.account_type
+        return account.account_type == AccountType.SECURITY_COMPANY and account.is_verified
+    
+    def handle_no_permission(self):
+        messages.error(self.request, "You must be a verified security company to access this page.")
+        return redirect('post_list')
     
     def get(self, request, *args, **kwargs):
         account = request.user.account_type
-        
         posts = Post.objects.all().order_by('-created_on')[:20]
         
         api_stats = {
@@ -259,6 +291,17 @@ class CrimeDataAPIView(View):
 
 class PostListView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
+        
+        if not hasattr(request.user, 'account_type'):
+            messages.error(request, "Please complete account setup.")
+            return redirect('account_type_signup')
+        
+        account = request.user.account_type
+        
+        if account.account_type in [AccountType.POLICE, AccountType.SECURITY_COMPANY]:
+            if not account.is_verified:
+                messages.warning(request, "Your account needs verification to access all features.")
+        
         posts = Post.objects.all().order_by('-created_on')
         form = PostForm()
         identifier_formset = IdentifierFormSet()
@@ -272,6 +315,8 @@ class PostListView(LoginRequiredMixin, View):
             'form': form,
             'identifier_formset': identifier_formset,
             'identifier_counts' : identifier_counts,
+            'user_account_type': account.account_type if hasattr(request.user, 'account_type') else None,
+            'is_verified': account.is_verified if hasattr(request.user, 'account_type') else False,
         }
         return render(request, 'social/post_list.html', context)
 

@@ -1,3 +1,4 @@
+#socialnetwork/urls.py
 """
 URL configuration for socialnetwork project.
 
