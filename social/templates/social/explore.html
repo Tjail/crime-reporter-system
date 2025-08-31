@@ -1,3 +1,4 @@
+<!--This file is social/templates/social/explore.html-->
 {% extends 'landing/base.html' %}
 {% load crispy_forms_tags %}
 {% load hashtag_tags %}
@@ -41,6 +42,55 @@
             {% endif %}
         </div>
     </div>
+
+    {% if recent_pins %}
+    <div class="row justify-content-center mb-4">
+        <div class="col-md-8">
+            <h4 class="mb-3"><i class="fas fa-map-marker-alt text-danger"></i> Location Alerts</h4>
+            <div class="row">
+                {% for pin in recent_pins %}
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="card h-100 border-danger shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <span class="badge bg-danger">
+                                    {{ pin.get_report_type_display }}
+                                </span>
+                                <small class="text-muted">{{ pin.created_at|timesince }} ago</small>
+                            </div>
+                            
+                            <p class="card-text small">
+                                <i class="fas fa-user-secret"></i> Anonymous Report<br>
+                                {% if pin.message %}
+                                    {{ pin.message|truncatewords:20 }}
+                                {% else %}
+                                    Location flagged for suspicious activity
+                                {% endif %}
+                            </p>
+                            
+                            <div class="d-grid">
+                                <a href="{% url 'pin_detail' pin.id %}" class="btn btn-outline-danger btn-sm">
+                                    <i class="fas fa-map"></i> View on Map
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="text-center">
+                <a href="{% url 'crime_map' %}" class="btn btn-primary">
+                    <i class="fas fa-map-marked-alt"></i> View Full Crime Map
+                </a>
+                <a href="{% url 'pin_drop_location' %}" class="btn btn-danger ms-2">
+                    <i class="fas fa-exclamation-triangle"></i> Report Suspicious Activity
+                </a>
+            </div>
+        </div>
+    </div>
+    <hr class="my-4">
+    {% endif %}
 
     {% if posts %}
         <p class="swipe-hint text-center text-muted d-sm-none">← Swipe to see more →</p>

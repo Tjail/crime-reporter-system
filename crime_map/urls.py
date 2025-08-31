@@ -1,12 +1,13 @@
+#This file is crime_map/urls.py
 from django.urls import path
 from .views import map_view, pin_drop, quick_pin, hotzone_detail, pin_drop_location
-from . import views
+from . import views 
 
 urlpatterns = [
-    path('', map_view, name='crime_map'),
+    path('', views.map_view, name='crime_map'),
+    path('pin-drop/', views.pin_drop_location, name='pin_drop_location'),
     path('report/', pin_drop, name='pin_drop'),
     path('quick-report/', quick_pin, name='quick_pin'),
-    path('hotzone/<int:pk>/', hotzone_detail, name='hotzone_detail'),
-    path('pin-drop-location/', pin_drop_location, name='pin_drop_location'),
-    path('pin-drop-location/', views.pin_drop_location, name='pin_drop_location'),
+    path('pin/<int:pk>/', views.pin_detail_view, name='pin_detail'),
+    path('hotzone/<int:pk>/', views.hotzone_detail, name='hotzone_detail'),
 ]

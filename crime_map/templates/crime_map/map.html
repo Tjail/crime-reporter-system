@@ -1,5 +1,7 @@
+<!--this file is crime_map/templates/crime_map/map.html-->
 {% extends 'landing/base.html' %}
 {% load static %}
+{% load i18n %}
 
 {% block content %}
 <div class="container">
@@ -9,7 +11,7 @@
     </div>
 
     <div class="d-flex justify-content-between mb-3">
-        <a href="{% url 'drop_pin' %}" class="btn btn-danger">
+        <a href="{% url 'pin_drop_location' %}" class="btn btn-danger">
             <i class="fas fa-map-marker-alt"></i> Report Suspicious Activity
         </a>
         <button id="locate-btn" class="btn btn-outline-primary">

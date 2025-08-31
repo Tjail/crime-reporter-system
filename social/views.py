@@ -16,8 +16,9 @@ from collections import Counter
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.utils import timezone
+from crime_map.models import PinDrop, HotZone
 import secrets
-
+from datetime import timedelta
 
 def send_otp_email(user):
     otp_obj, created = UserOTP.objects.get_or_create(user=user)
@@ -309,12 +310,24 @@ class PostListView(LoginRequiredMixin, View):
         identifier_counts = {}
         for identifier in Identifier.objects.all():
             identifier_counts[identifier.value] = identifier_counts.get(identifier.value, 0) + 1
+            
+        recent_pins = PinDrop.objects.filter(
+            created_at__gte=timezone.now() - timedelta(days=7)
+        ).order_by('-created_at')[:5]
+        
+        # Get active hotzones
+        active_hotzones = HotZone.objects.filter(
+            resolved=False,
+            expires_at__gte=timezone.now()
+        ).order_by('-alert_level')[:3]
 
         context = {
             'post_list': posts,
             'form': form,
             'identifier_formset': identifier_formset,
             'identifier_counts' : identifier_counts,
+            'recent_pins': recent_pins,
+            'active_hotzones': active_hotzones,
             'user_account_type': account.account_type if hasattr(request.user, 'account_type') else None,
             'is_verified': account.is_verified if hasattr(request.user, 'account_type') else False,
         }
@@ -468,11 +481,16 @@ class Explore(View):
             posts = Post.objects.filter(tags__in=[tag])
         else:
             posts = Post.objects.all()
+            
+        recent_pins = PinDrop.objects.filter(
+            created_at__gte=timezone.now() - timedelta(days=7)
+        ).order_by('-created_at')[:10]
 
         context = {
             'tag': tag,
             'posts':posts,
             'explore_form': explore_form,
+            'recent_pins': recent_pins,
         }
         return render(request, 'social/explore.html', context)
 

@@ -1,38 +1,49 @@
+# This file is crime_map/views.py
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
 from datetime import timedelta
 from .models import HotZone, PinDrop
-from .forms import PinDropForm
+from .forms import PinDropForm, QuickPinForm
 from .utils import calculate_distance
 import json
-from django.utils import timezone
-from .forms import PinDropForm, QuickPinForm
 
 @login_required
 def pin_drop_location(request):
-    """View for the pin drop location page"""
+    """Main pin drop location page"""
     if request.method == 'POST':
-        form = QuickPinForm(request.POST)
-        if form.is_valid():
-            pin = PinDrop(
+        latitude = request.POST.get('latitude')
+        longitude = request.POST.get('longitude')
+        report_type = request.POST.get('reason', 'suspicious')
+        message = request.POST.get('message', '')
+        
+        type_mapping = {
+            'Suspicious Activity': 'suspicious',
+            'Petty Crime': 'petty',
+            'Felony Crime': 'felony',
+            'Other Incident': 'other'
+        }
+        
+        report_type_key = type_mapping.get(report_type, 'suspicious')
+        
+        if latitude and longitude:
+            pin = PinDrop.objects.create(
                 user=request.user,
-                latitude=form.cleaned_data['latitude'],
-                longitude=form.cleaned_data['longitude'],
-                report_type=form.cleaned_data['report_type'],
-                message=form.cleaned_data['message'],
+                latitude=float(latitude),
+                longitude=float(longitude),
+                report_type=report_type_key,
+                message=message,
                 is_anonymous=True
             )
-            pin.save()
+            
             check_hotzone_creation(pin)
-            messages.success(request, "Location pinned successfully!")
-            return redirect('crime_map')
-    else:
-        form = QuickPinForm()
+            messages.success(request, "Location reported successfully! Thank you for helping keep the community safe.")
+            return redirect('post_list')
+        else:
+            messages.error(request, "Please select a location on the map")
     
     return render(request, 'crime_map/pin_drop_location.html', {
-        'form': form,
         'default_lat': -26.2041,
         'default_lng': 28.0473
     })
@@ -67,6 +78,46 @@ def pin_drop(request):
         'default_lat': -26.2041,
         'default_lng': 28.0473
     })
+    
+@login_required
+def pin_detail_view(request, pk):
+    """View for individual pin drop details"""
+    pin = get_object_or_404(PinDrop, pk=pk)
+    
+    hotzones = HotZone.objects.filter(resolved=False, expires_at__gte=timezone.now())
+    pin_hotzone = None
+    
+    for zone in hotzones:
+        distance = calculate_distance(
+            pin.latitude, pin.longitude,
+            zone.latitude, zone.longitude
+        )
+        if distance <= zone.radius:
+            pin_hotzone = zone
+            break
+    
+    all_pins = PinDrop.objects.filter(
+        created_at__gte=timezone.now() - timedelta(days=30)
+    ).exclude(id=pin.id)
+    
+    nearby_count = 0
+    for other_pin in all_pins:
+        distance = calculate_distance(
+            pin.latitude, pin.longitude,
+            other_pin.latitude, other_pin.longitude
+        )
+        if distance <= 1.5:
+            nearby_count += 1
+    
+    context = {
+        'pin': pin,
+        'hotzone': pin_hotzone,
+        'nearby_count': nearby_count,
+        'map_lat': pin.latitude,
+        'map_lng': pin.longitude
+    }
+    
+    return render(request, 'crime_map/pin_detail.html', context)
 
 @login_required
 def quick_pin(request):
@@ -114,7 +165,7 @@ def map_view(request):
         'lng': pin.longitude,
         'type': pin.report_type,
         'message': pin.message or '',
-        'username': 'Anonymous' if pin.is_anonymous else pin.user.username,
+        'username': 'Anonymous',
         'date': pin.created_at.strftime('%Y-%m-%d %H:%M')
     } for pin in pins]
     
@@ -129,7 +180,7 @@ def map_view(request):
     context = {
         'pin_data': json.dumps(pin_data),
         'hotzone_data': json.dumps(hotzone_data),
-        'default_lat': -26.2041,  # Johannesburg
+        'default_lat': -26.2041,  # Jozi
         'default_lng': 28.0473
     }
     
@@ -171,7 +222,8 @@ def check_hotzone_creation(new_pin):
         if distance <= 1.5:  # 1.5km radius
             nearby_pins.append(pin)
     
-    unique_users = {pin.user for pin in nearby_pins if pin.user}
+    unique_users = {pin.user for pin in nearby_pins}
+    unique_users.add(new_pin.user)
     user_count = len(unique_users)
     
     if user_count >= 20:

@@ -1,3 +1,4 @@
+# This file is crime_map/apps.py
 from django.apps import AppConfig
 
 

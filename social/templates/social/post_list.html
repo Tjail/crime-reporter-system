@@ -1,3 +1,4 @@
+<!--This file is social/templates/social/post_list.html-->
 {% extends 'landing/base.html' %}
 {% load crispy_forms_tags %}
 {% load hashtag_tags %}
@@ -117,6 +118,27 @@
                     </div>
                 </div>
             </div>
+
+            {% if recent_pins %}
+            <div class="row justify-content-center mt-3 mb-2">
+                <div class="col-md-8 col-sm-12">
+                    <div class="alert alert-warning py-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0"><i class="fas fa-map-marker-alt"></i> Recent Location Alerts</h6>
+                            <a href="{% url 'crime_map' %}" class="btn btn-sm btn-outline-danger">View All</a>
+                        </div>
+                        <!-- Show only 2 most recent pins inline -->
+                        <div class="mt-2">
+                            {% for pin in recent_pins|slice:":2" %}
+                                <span class="badge bg-danger me-2">
+                                    {{ pin.get_report_type_display }} - {{ pin.created_at|timesince }} ago
+                                </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
 
             {% for post in post_list %}
                  <div class="row justify-content-center mt-3">

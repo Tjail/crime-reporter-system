@@ -97,6 +97,62 @@
         transform: scale(1.5);
         z-index: 10;
     }
+
+    .form-label {
+        color: #212529 !important;  /* Dark black instead of grey */
+        font-weight: 600 !important;
+        font-size: 1rem !important;
+    }
+    
+    .form-control {
+        color: #212529 !important;  /* Dark text in inputs */
+        background-color: #fff !important;
+        border: 2px solid #495057 !important;  /* Darker border */
+    }
+    
+    .form-control::placeholder {
+        color: #6c757d !important;  /* Slightly darker placeholder */
+    }
+    
+    .form-control:focus {
+        color: #212529 !important;
+        border-color: #0d6efd !important;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+    }
+    
+    /* Fix Step 1 and Step 2 headings */
+    h2, h3 {
+        color: #212529 !important;  /* Make headings dark */
+        font-weight: bold !important;
+    }
+    
+    /* Fix muted text */
+    .text-muted {
+        color: #495057 !important;  /* Darker grey, more readable */
+    }
+    
+    /* Fix small text under inputs */
+    small {
+        color: #495057 !important;
+        font-size: 0.9rem !important;
+    }
+    
+    /* Ensure all text in cards is visible */
+    .card-title, .card-body p {
+        color: #212529 !important;
+    }
+    
+    /* Fix the account type section background text */
+    .account-type-section h3 {
+        color: #212529 !important;
+        font-weight: 700 !important;
+    }
+    
+    .form-section h3 {
+        color: #212529 !important;
+        font-weight: 700 !important;
+    }
+
 </style>
 
 <div class="signup-wrapper">

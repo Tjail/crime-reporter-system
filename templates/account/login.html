@@ -45,6 +45,55 @@
         border-color: #667eea;
         box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
     }
+
+    .form-label {
+        color: #212529 !important;  /* Dark black */
+        font-weight: 600 !important;
+        font-size: 1rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .form-control {
+        color: #212529 !important;  /* Dark text */
+        background-color: #ffffff !important;
+        border: 2px solid #495057 !important;
+        font-size: 1rem !important;
+    }
+    
+    .form-control::placeholder {
+        color: #6c757d !important;
+    }
+    
+    .form-control:focus {
+        color: #212529 !important;
+        background-color: #ffffff !important;
+        border-color: #667eea !important;
+        box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25) !important;
+    }
+    
+    /* Fix text in login body */
+    .login-body p {
+        color: #495057 !important;  /* Darker grey for better readability */
+    }
+    
+    .login-body .text-muted {
+        color: #495057 !important;
+    }
+    
+    /* Ensure input text is always dark */
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
+        color: #212529 !important;
+    }
+    
+    /* Fix any crispy forms labels */
+    .control-label,
+    label {
+        color: #212529 !important;
+        font-weight: 600 !important;
+    }
+
 </style>
 
 <div class="login-wrapper">

@@ -1,3 +1,4 @@
+#This file is crime_map/models.py
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.utils import timezone
@@ -19,8 +20,10 @@ class PinDrop(models.Model):
     report_type = models.CharField(max_length=20, choices=REPORT_TYPE_CHOICES)
     message = models.TextField(blank=True, null=True, max_length=500)
     created_at = models.DateTimeField(auto_now_add=True)
-    is_anonymous = models.BooleanField(default=False)
+    is_anonymous = models.BooleanField(default=True)
     requires_followup = models.BooleanField(default=False)
+    
+    
     
     class Meta:
         ordering = ['-created_at']
@@ -31,8 +34,11 @@ class PinDrop(models.Model):
         ]
         
     def __str__(self):
-        username = "Anonymous" if self.is_anonymous else self.user.username
-        return f"{self.get_report_type_display()} by {username} at {self.created_at.strftime('%Y-%m-%d %H:%M')}"
+        return f"{self.get_report_type_display()} at {self.created_at.strftime('%Y-%m-%d %H:%M')}"
+    
+    def get_display_name(self):
+        """Always return Anonymous for privacy"""
+        return "Anonymous User"
 
 class HotZone(models.Model):
     ALERT_LEVELS = (
@@ -54,7 +60,7 @@ class HotZone(models.Model):
     
     def save(self, *args, **kwargs):
         if not self.expires_at:
-            self.expires_at = self.created_at + timedelta(weeks=6)
+            self.expires_at = timezone.now() + timedelta(weeks=6)
         super().save(*args, **kwargs)
     
     def __str__(self):
