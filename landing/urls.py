@@ -1,3 +1,4 @@
+#this file is landing/urls.py
 from django.urls import path
 from landing.views import Index
 from .views import home, thank_you

@@ -19,6 +19,7 @@ from django.utils import timezone
 from crime_map.models import PinDrop, HotZone
 import secrets
 from datetime import timedelta
+from django.views.generic import TemplateView
 
 def send_otp_email(user):
     otp_obj, created = UserOTP.objects.get_or_create(user=user)
@@ -561,6 +562,14 @@ class AddArticleView(LoginRequiredMixin, UserPassesTestMixin, View):
             form.save()
             return redirect('crime_article')
         return render(request, 'social/add_article.html', {'form': form})
+    
+class ChatbotSupportView(TemplateView):
+    template_name = 'social/chatbot_support.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_title'] = 'Geth-Mothusi - Crime Victim Support Assistant'
+        return context
 
 class DonationPageView(View):
     def get(self, request, *args, **kwargs):

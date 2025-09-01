@@ -15,6 +15,7 @@ from pathlib import Path
 import os
 from django.utils.translation import gettext_lazy as _
 from django.conf.global_settings import MEDIA_ROOT, MEDIA_URL, STATICFILES_DIRS
+#import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 

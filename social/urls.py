@@ -1,8 +1,9 @@
+#this file is social/urls.py
 from django.urls import path, include
 from .views import (PostListView, PostDetailView, PostEditView, PostDeleteView, ProfileView, ProfileEditView,
                     UserSearch, Explore, IdentifierSearchView, verify_otp_view, resend_otp_view, AddArticleView,
                     ArticleDetailView, DonationPageView, CrimeArticleView, AccountTypeSignupView, SubmitVerificationView,
-                    VerificationPendingView, PoliceDashboardView, SecurityDashboardView,
+                    VerificationPendingView, PoliceDashboardView, SecurityDashboardView, ChatbotSupportView,
                     UpdateInvestigationView, CrimeDataAPIView, generate_api_key)
 from . import views
 
@@ -33,6 +34,7 @@ urlpatterns = [
     path('crime-article/add/', AddArticleView.as_view(), name='add_article'),
     path('crime-article/<int:pk>/', ArticleDetailView.as_view(), name='article_detail'),
     path('donate/', DonationPageView.as_view(), name='donate'),
+    path('chatbot-support/', ChatbotSupportView.as_view(), name='chatbot_support'),
     path('map/', include('crime_map.urls')),
 ]
 
