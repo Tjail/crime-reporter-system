@@ -1,0 +1,406 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | CrimeWatch Reporting System Admin{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}">
+        <i class="fas fa-shield-alt"></i>
+        CrimeWatch Reporting System Administration
+    </a>
+</h1>
+{% endblock %}
+
+{% block nav-global %}
+<div class="nav-global-container">
+    <a href="{% url 'admin_dashboard' %}" class="nav-global-item">
+        <i class="fas fa-tachometer-alt"></i> Modern Dashboard
+    </a>
+    <a href="{% url 'home' %}" class="nav-global-item">
+        <i class="fas fa-home"></i> Back to Site
+    </a>
+</div>
+{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<style>
+    :root {
+        --primary-color: #2c3e50;
+        --secondary-color: #3498db;
+        --accent-color: #e74c3c;
+        --success-color: #27ae60;
+        --warning-color: #f39c12;
+    }
+
+    /* Header Styling */
+    #header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        color: white;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    #site-name a {
+        color: white !important;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 1.5em;
+    }
+
+    #site-name i {
+        margin-right: 10px;
+        color: #ecf0f1;
+    }
+
+    /* Navigation Bar */
+    .nav-global-container {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        float: right;
+        margin-top: 10px;
+    }
+
+    .nav-global-item {
+        background: rgba(255,255,255,0.1);
+        color: white !important;
+        padding: 8px 16px;
+        border-radius: 20px;
+        text-decoration: none !important;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+
+    .nav-global-item:hover {
+        background: rgba(255,255,255,0.2);
+        transform: translateY(-2px);
+    }
+
+    .nav-global-item i {
+        margin-right: 5px;
+    }
+
+    /* Breadcrumbs */
+    .breadcrumbs {
+        background: #ecf0f1;
+        border: none;
+        border-radius: 0;
+        margin: 0;
+        padding: 15px 20px;
+        font-size: 13px;
+    }
+
+    .breadcrumbs a {
+        color: var(--primary-color);
+        text-decoration: none;
+    }
+
+    .breadcrumbs a:hover {
+        color: var(--secondary-color);
+    }
+
+    /* Main Content Area */
+    #container {
+        background: #f8f9fa;
+        min-height: 100vh;
+    }
+
+    #content {
+        background: white;
+        margin: 20px;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        padding: 30px;
+    }
+
+    /* Module Styling */
+    .module {
+        background: white;
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        margin-bottom: 20px;
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+
+    .module:hover {
+        transform: translateY(-2px);
+    }
+
+    .module h2 {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        margin: 0;
+        padding: 20px;
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+    .module h3 {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        margin: 0;
+        padding: 15px 20px;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    /* App List Styling */
+    .app-social .module h2 {
+        background: linear-gradient(135deg, var(--accent-color), #c0392b);
+    }
+
+    .app-auth .module h2 {
+        background: linear-gradient(135deg, var(--success-color), #2ecc71);
+    }
+
+    .app-sites .module h2 {
+        background: linear-gradient(135deg, var(--warning-color), #e67e22);
+    }
+
+    .app-account .module h2 {
+        background: linear-gradient(135deg, #9b59b6, #8e44ad);
+    }
+
+    .app-socialaccount .module h2 {
+        background: linear-gradient(135deg, #1abc9c, #16a085);
+    }
+
+    /* Table Styling */
+    .results table {
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        border: none;
+    }
+
+    .results table thead th {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        border: none;
+        padding: 15px;
+        font-weight: 600;
+    }
+
+    .results table tbody tr {
+        border-bottom: 1px solid #ecf0f1;
+        transition: background-color 0.3s ease;
+    }
+
+    .results table tbody tr:hover {
+        background: #f8f9fa;
+    }
+
+    .results table tbody td {
+        padding: 15px;
+        border: none;
+    }
+
+    /* Form Styling */
+    .form-row {
+        margin-bottom: 20px;
+    }
+
+    .form-row label {
+        font-weight: 600;
+        color: var(--primary-color);
+    }
+
+    input[type="text"], input[type="email"], input[type="password"], 
+    textarea, select {
+        border: 2px solid #ecf0f1;
+        border-radius: 8px;
+        padding: 10px;
+        transition: border-color 0.3s ease;
+    }
+
+    input[type="text"]:focus, input[type="email"]:focus, 
+    input[type="password"]:focus, textarea:focus, select:focus {
+        border-color: var(--secondary-color);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    }
+
+    /* Button Styling */
+    .default, input[type="submit"], .submit-row input {
+        background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+        color: white;
+        border: none;
+        border-radius: 25px;
+        padding: 10px 30px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .default:hover, input[type="submit"]:hover, .submit-row input:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+    }
+
+    .deletelink {
+        background: linear-gradient(135deg, var(--accent-color), #c0392b);
+        color: white;
+        border-radius: 25px;
+        padding: 8px 20px;
+        text-decoration: none;
+    }
+
+    .deletelink:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+    }
+
+    /* Dashboard App Icons */
+    .module caption a::before {
+        font-family: "Font Awesome 6 Free";
+        margin-right: 10px;
+        font-weight: 900;
+    }
+
+    /* Add icons for each app */
+    a[href="/admin-go-hideandseek/social/"]::before { content: "\f3ed"; } /* shield */
+    a[href="/admin-go-hideandseek/auth/"]::before { content: "\f007"; } /* user */
+    a[href="/admin-go-hideandseek/sites/"]::before { content: "\f0ac"; } /* globe */
+    a[href="/admin-go-hideandseek/account/"]::before { content: "\f2bd"; } /* user-circle */
+    a[href="/admin-go-hideandseek/socialaccount/"]::before { content: "\f1ba"; } /* social */
+
+    /* Model-specific icons */
+    a[href*="verificationrequest"]::before { content: "\f058"; } /* check-circle */
+    a[href*="accounttype"]::before { content: "\f507"; } /* user-tag */
+    a[href*="post"]::before { content: "\f15c"; } /* file-text */
+    a[href*="article"]::before { content: "\f1ea"; } /* newspaper */
+    a[href*="user"]::before { content: "\f007"; } /* user */
+    a[href*="group"]::before { content: "\f0c0"; } /* users */
+
+    /* Pagination */
+    .paginator {
+        text-align: center;
+        margin: 30px 0;
+    }
+
+    .paginator a, .paginator .this-page {
+        display: inline-block;
+        padding: 8px 16px;
+        margin: 0 5px;
+        border-radius: 20px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .paginator a {
+        background: var(--secondary-color);
+        color: white;
+    }
+
+    .paginator a:hover {
+        background: var(--primary-color);
+        transform: translateY(-2px);
+    }
+
+    .paginator .this-page {
+        background: var(--accent-color);
+        color: white;
+        font-weight: 600;
+    }
+
+    /* Messages */
+    .messagelist {
+        margin: 20px 0;
+    }
+
+    .messagelist .success {
+        background: linear-gradient(135deg, var(--success-color), #2ecc71);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 15px 20px;
+        margin-bottom: 10px;
+    }
+
+    .messagelist .error {
+        background: linear-gradient(135deg, var(--accent-color), #c0392b);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 15px 20px;
+        margin-bottom: 10px;
+    }
+
+    /* Action Bar */
+    .actions {
+        background: #f8f9fa;
+        border: none;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+
+    .actions select {
+        border-radius: 20px;
+        padding: 8px 15px;
+    }
+
+    .actions .button {
+        background: linear-gradient(135deg, var(--warning-color), #e67e22);
+        color: white;
+        border: none;
+        border-radius: 20px;
+        padding: 8px 20px;
+        margin-left: 10px;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .nav-global-container {
+            float: none;
+            margin-top: 15px;
+        }
+
+        #content {
+            margin: 10px;
+            padding: 20px;
+        }
+
+        .module {
+            margin-bottom: 15px;
+        }
+    }
+
+    /* Custom Dashboard Link in Admin */
+    .dashboard-link {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: linear-gradient(135deg, var(--accent-color), #c0392b);
+        color: white;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        font-size: 20px;
+        box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+        transition: all 0.3s ease;
+        z-index: 1000;
+    }
+
+    .dashboard-link:hover {
+        transform: translateY(-5px) scale(1.1);
+        box-shadow: 0 10px 25px rgba(231, 76, 60, 0.4);
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block footer %}
+{{ block.super }}
+<a href="{% url 'admin_dashboard' %}" class="dashboard-link" title="Go to Modern Dashboard">
+    <i class="fas fa-tachometer-alt"></i>
+</a>
+{% endblock %}

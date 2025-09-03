@@ -1,0 +1,176 @@
+<!-- this file is templates/admin/verification_detail.html -->
+{% extends 'admin/base.html' %}
+
+{% block title %}Verification Detail{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="page-title">
+        <i class="fas fa-user-check me-3"></i>
+        Verification Detail
+    </h1>
+    <a href="{% url 'admin_verification_management' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Back to List
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Verification Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>User Details</h6>
+                        <p><strong>Username:</strong> {{ verification.user.username }}</p>
+                        <p><strong>Email:</strong> {{ verification.user.email }}</p>
+                        <p><strong>Name:</strong> {{ verification.user.first_name }} {{ verification.user.last_name }}</p>
+                        <p><strong>Account Type:</strong> 
+                            <span class="badge bg-info">{{ verification.get_account_type_display }}</span>
+                        </p>
+                        <p><strong>Submitted:</strong> {{ verification.submitted_at|date:"M d, Y H:i" }}</p>
+                        <p><strong>Status:</strong> 
+                            <span class="badge 
+                                {% if verification.status == 'PENDING' %}bg-warning
+                                {% elif verification.status == 'APPROVED' %}bg-success
+                                {% elif verification.status == 'REJECTED' %}bg-danger
+                                {% elif verification.status == 'MORE_INFO' %}bg-info
+                                {% endif %}">
+                                {{ verification.get_status_display }}
+                            </span>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        {% if verification.account_type == 'POLICE' %}
+                            <h6>Police Information</h6>
+                            <p><strong>Badge Number:</strong> {{ verification.police_badge_number|default:"N/A" }}</p>
+                            <p><strong>Station:</strong> {{ verification.police_station|default:"N/A" }}</p>
+                            <p><strong>Rank:</strong> {{ verification.police_rank|default:"N/A" }}</p>
+                        {% elif verification.account_type == 'SECURITY' %}
+                            <h6>Security Company Information</h6>
+                            <p><strong>Company Name:</strong> {{ verification.company_name|default:"N/A" }}</p>
+                            <p><strong>Registration:</strong> {{ verification.company_registration|default:"N/A" }}</p>
+                            <p><strong>PSIRA Number:</strong> {{ verification.psira_number|default:"N/A" }}</p>
+                        {% endif %}
+                        
+                        {% if verification.notes %}
+                            <h6>Additional Notes</h6>
+                            <p>{{ verification.notes }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Documents Section -->
+                <hr>
+                <h6>Uploaded Documents</h6>
+                <div class="row">
+                    {% if verification.id_document %}
+                        <div class="col-md-4">
+                            <div class="document-preview text-center p-3 border rounded">
+                                <i class="fas fa-id-card fa-3x text-primary mb-2"></i>
+                                <p><strong>ID Document</strong></p>
+                                <a href="{{ verification.id_document.url }}" target="_blank" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    {% if verification.proof_document %}
+                        <div class="col-md-4">
+                            <div class="document-preview text-center p-3 border rounded">
+                                <i class="fas fa-file-alt fa-3x text-success mb-2"></i>
+                                <p><strong>Proof Document</strong></p>
+                                <a href="{{ verification.proof_document.url }}" target="_blank" class="btn btn-sm btn-success">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    {% if verification.additional_document %}
+                        <div class="col-md-4">
+                            <div class="document-preview text-center p-3 border rounded">
+                                <i class="fas fa-file fa-3x text-info mb-2"></i>
+                                <p><strong>Additional Document</strong></p>
+                                <a href="{{ verification.additional_document.url }}" target="_blank" class="btn btn-sm btn-info">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Actions</h5>
+            </div>
+            <div class="card-body">
+                {% if verification.status == 'PENDING' %}
+                    <!-- Approve Form -->
+                    <form method="post" class="mb-3">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="approve">
+                        <button type="submit" class="btn btn-success w-100 mb-2" onclick="return confirm('Are you sure you want to approve this verification?')">
+                            <i class="fas fa-check"></i> Approve Verification
+                        </button>
+                    </form>
+                    
+                    <!-- Reject Form -->
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="reject">
+                        <div class="mb-3">
+                            <label for="rejection_reason" class="form-label">Rejection Reason</label>
+                            <textarea name="rejection_reason" id="rejection_reason" class="form-control" rows="3" placeholder="Explain why this verification is being rejected..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-danger w-100" onclick="return confirm('Are you sure you want to reject this verification?')">
+                            <i class="fas fa-times"></i> Reject Verification
+                        </button>
+                    </form>
+                {% else %}
+                    <div class="alert alert-info">
+                        <h6>Status: {{ verification.get_status_display }}</h6>
+                        {% if verification.reviewed_by %}
+                            <p><strong>Reviewed by:</strong> {{ verification.reviewed_by.username }}</p>
+                        {% endif %}
+                        {% if verification.reviewed_at %}
+                            <p><strong>Reviewed at:</strong> {{ verification.reviewed_at|date:"M d, Y H:i" }}</p>
+                        {% endif %}
+                        {% if verification.rejection_reason %}
+                            <p><strong>Rejection Reason:</strong></p>
+                            <p class="text-muted">{{ verification.rejection_reason }}</p>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- User Account Information -->
+        <div class="card mt-3">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Account Status</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Account Active:</strong> 
+                    <span class="badge {% if verification.user.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                        {% if verification.user.is_active %}Active{% else %}Inactive{% endif %}
+                    </span>
+                </p>
+                <p><strong>Account Verified:</strong> 
+                    <span class="badge {% if verification.user.account_type.is_verified %}bg-success{% else %}bg-warning{% endif %}">
+                        {% if verification.user.account_type.is_verified %}Verified{% else %}Unverified{% endif %}
+                    </span>
+                </p>
+                <p><strong>Date Joined:</strong> {{ verification.user.date_joined|date:"M d, Y" }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

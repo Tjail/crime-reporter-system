@@ -1,0 +1,418 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static admin_urls %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block content_title %}
+<div class="admin-header">
+    <h1 class="admin-title">
+        <i class="fas fa-shield-alt"></i>
+        CrimeWatch Reporting System Administration Panel
+    </h1>
+    <p class="admin-subtitle">Manage verification requests, crime reports, and user accounts</p>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Quick Stats Dashboard -->
+<div class="admin-stats-grid">
+    <div class="admin-stat-card red">
+        <div class="stat-icon">
+            <i class="fas fa-user-clock"></i>
+        </div>
+        <div class="stat-info">
+            <h3>Pending Verifications</h3>
+            <p class="stat-number">{{ pending_verifications_count|default:0 }}</p>
+        </div>
+        <a href="{% url 'admin_verification_management' %}" class="stat-link">View All</a>
+    </div>
+    
+    <div class="admin-stat-card blue">
+        <div class="stat-icon">
+            <i class="fas fa-file-alt"></i>
+        </div>
+        <div class="stat-info">
+            <h3>Total Reports</h3>
+            <p class="stat-number">{{ total_reports_count|default:0 }}</p>
+        </div>
+        <a href="{% url 'admin_reports_management' %}" class="stat-link">View All</a>
+    </div>
+    
+    <div class="admin-stat-card green">
+        <div class="stat-icon">
+            <i class="fas fa-users"></i>
+        </div>
+        <div class="stat-info">
+            <h3>Total Users</h3>
+            <p class="stat-number">{{ total_users_count|default:0 }}</p>
+        </div>
+        <a href="{% url 'admin_users_management' %}" class="stat-link">View All</a>
+    </div>
+    
+    <div class="admin-stat-card purple">
+        <div class="stat-icon">
+            <i class="fas fa-tachometer-alt"></i>
+        </div>
+        <div class="stat-info">
+            <h3>Modern CrimeWatch RS Dashboard</h3>
+            <p class="stat-description">Advanced Analytics</p>
+        </div>
+        <a href="{% url 'admin_dashboard' %}" class="stat-link">Open Dashboard</a>
+    </div>
+</div>
+
+<!-- Application Management -->
+<div class="admin-apps-container">
+    {% if app_list %}
+        {% for app in app_list %}
+            <div class="admin-app-section app-{{ app.app_label }}">
+                <div class="app-header">
+                    <h2>
+                        {% if app.app_label == 'social' %}
+                            <i class="fas fa-shield-alt"></i> Crime Reporting System
+                        {% elif app.app_label == 'auth' %}
+                            <i class="fas fa-users-cog"></i> User Management
+                        {% elif app.app_label == 'sites' %}
+                            <i class="fas fa-globe"></i> Site Configuration
+                        {% elif app.app_label == 'account' %}
+                            <i class="fas fa-user-circle"></i> Account Management
+                        {% elif app.app_label == 'socialaccount' %}
+                            <i class="fas fa-share-alt"></i> Social Authentication
+                        {% else %}
+                            <i class="fas fa-cogs"></i> {{ app.name }}
+                        {% endif %}
+                    </h2>
+                </div>
+                
+                <div class="app-models">
+                    {% for model in app.models %}
+                        <div class="model-item">
+                            {% if model.admin_url %}
+                                <a href="{{ model.admin_url }}" class="model-link">
+                                    <div class="model-icon">
+                                        {% if model.object_name == 'VerificationRequest' %}
+                                            <i class="fas fa-user-check"></i>
+                                        {% elif model.object_name == 'AccountType' %}
+                                            <i class="fas fa-user-tag"></i>
+                                        {% elif model.object_name == 'Post' %}
+                                            <i class="fas fa-file-alt"></i>
+                                        {% elif model.object_name == 'Article' %}
+                                            <i class="fas fa-newspaper"></i>
+                                        {% elif model.object_name == 'User' %}
+                                            <i class="fas fa-user"></i>
+                                        {% elif model.object_name == 'Group' %}
+                                            <i class="fas fa-users"></i>
+                                        {% elif model.object_name == 'CrimeType' %}
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                        {% elif model.object_name == 'UserProfile' %}
+                                            <i class="fas fa-id-card"></i>
+                                        {% elif model.object_name == 'APIAccessLog' %}
+                                            <i class="fas fa-chart-line"></i>
+                                        {% else %}
+                                            <i class="fas fa-database"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="model-info">
+                                        <h4>{{ model.name }}</h4>
+                                        <div class="model-actions">
+                                            {% if model.add_url %}
+                                                <span class="action-link add">
+                                                    <i class="fas fa-plus"></i> Add
+                                                </span>
+                                            {% endif %}
+                                            <span class="action-link change">
+                                                <i class="fas fa-edit"></i> Change
+                                            </span>
+                                        </div>
+                                    </div>
+                                </a>
+                            {% else %}
+                                <span class="model-link disabled">
+                                    <div class="model-icon">
+                                        <i class="fas fa-ban"></i>
+                                    </div>
+                                    <div class="model-info">
+                                        <h4>{{ model.name }}</h4>
+                                        <p class="model-description">No permissions</p>
+                                    </div>
+                                </span>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="no-apps-message">
+            <i class="fas fa-inbox fa-3x"></i>
+            <h3>No applications available</h3>
+            <p>You don't have permission to view any applications.</p>
+        </div>
+    {% endif %}
+</div>
+
+{% comment %}
+<!-- Recent Actions (if available) -->
+{% if recent_actions %}
+    <div class="recent-actions-section">
+        <h2><i class="fas fa-history"></i> Recent Actions</h2>
+        <div class="recent-actions-list">
+            {% for entry in recent_actions %}
+                <div class="recent-action-item">
+                    <div class="action-icon">
+                        {% if entry.is_addition %}
+                            <i class="fas fa-plus text-success"></i>
+                        {% elif entry.is_change %}
+                            <i class="fas fa-edit text-primary"></i>
+                        {% elif entry.is_deletion %}
+                            <i class="fas fa-trash text-danger"></i>
+                        {% endif %}
+                    </div>
+                    <div class="action-details">
+                        <h4>{{ entry.object_repr }}</h4>
+                        <p>{{ entry.change_message }}</p>
+                        <small>{{ entry.action_time|date:"M d, Y H:i" }} by {{ entry.user.username }}</small>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}
+{% endcomment %}
+
+<style>
+.admin-header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding: 30px 0;
+    background: linear-gradient(135deg, rgba(52, 152, 219, 0.1), rgba(44, 62, 80, 0.1));
+    border-radius: 15px;
+}
+
+.admin-title {
+    font-size: 2.5em;
+    color: var(--primary-color);
+    margin: 0;
+    font-weight: 700;
+}
+
+.admin-subtitle {
+    color: #7f8c8d;
+    font-size: 1.2em;
+    margin: 10px 0 0 0;
+}
+
+.admin-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+.admin-stat-card {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    display: flex;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+}
+
+.admin-stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.admin-stat-card.red { border-left: 5px solid #e74c3c; }
+.admin-stat-card.blue { border-left: 5px solid #3498db; }
+.admin-stat-card.green { border-left: 5px solid #27ae60; }
+.admin-stat-card.purple { border-left: 5px solid #9b59b6; }
+
+.stat-icon {
+    font-size: 3em;
+    margin-right: 20px;
+    opacity: 0.7;
+}
+
+.admin-stat-card.red .stat-icon { color: #e74c3c; }
+.admin-stat-card.blue .stat-icon { color: #3498db; }
+.admin-stat-card.green .stat-icon { color: #27ae60; }
+.admin-stat-card.purple .stat-icon { color: #9b59b6; }
+
+.stat-info h3 {
+    margin: 0 0 5px 0;
+    color: var(--primary-color);
+    font-size: 1.1em;
+    font-weight: 600;
+}
+
+.stat-number {
+    font-size: 2.5em;
+    font-weight: bold;
+    margin: 0;
+    color: var(--primary-color);
+}
+
+.stat-description {
+    color: #7f8c8d;
+    margin: 0;
+    font-size: 1em;
+}
+
+.stat-link {
+    position: absolute;
+    bottom: 10px;
+    right: 15px;
+    background: var(--secondary-color);
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: 0.9em;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+}
+
+.stat-link:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+.admin-apps-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 30px;
+}
+
+.admin-app-section {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    overflow: hidden;
+    transition: transform 0.3s ease;
+}
+
+.admin-app-section:hover {
+    transform: translateY(-3px);
+}
+
+.app-header {
+    padding: 20px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+}
+
+.app-header h2 {
+    margin: 0;
+    font-size: 1.4em;
+    font-weight: 600;
+}
+
+.app-models {
+    padding: 20px;
+}
+
+.model-item {
+    margin-bottom: 15px;
+}
+
+.model-link {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+}
+
+.model-link:hover {
+    background: #e9ecef;
+    border-left-color: var(--secondary-color);
+    color: inherit;
+}
+
+.model-link.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.model-icon {
+    font-size: 1.5em;
+    margin-right: 15px;
+    color: var(--secondary-color);
+    width: 30px;
+    text-align: center;
+}
+
+.model-info h4 {
+    margin: 0 0 8px 0;
+    color: var(--primary-color);
+    font-size: 1.1em;
+    font-weight: 600;
+}
+
+.model-actions {
+    display: flex;
+    gap: 15px;
+}
+
+.action-link {
+    font-size: 0.9em;
+    color: #7f8c8d;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.action-link.add {
+    color: var(--success-color);
+}
+
+.no-apps-message {
+    text-align: center;
+    padding: 60px 20px;
+    color: #7f8c8d;
+    grid-column: 1 / -1;
+}
+
+.no-apps-message i {
+    color: #bdc3c7;
+    margin-bottom: 20px;
+}
+
+.no-apps-message h3 {
+    margin: 20px 0 10px 0;
+    color: var(--primary-color);
+}
+
+@media (max-width: 768px) {
+    .admin-stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .admin-apps-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .admin-title {
+        font-size: 2em;
+    }
+    
+    .admin-stat-card {
+        flex-direction: column;
+        text-align: center;
+        padding: 20px;
+    }
+    
+    .stat-icon {
+        margin-right: 0;
+        margin-bottom: 15px;
+    }
+}
+</style>
+{% endblock %}

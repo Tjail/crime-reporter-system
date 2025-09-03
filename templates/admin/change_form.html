@@ -1,0 +1,489 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static admin_modify %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block extrahead %}{{ block.super }}
+<script src="{% url 'admin:jsi18n' %}"></script>
+{{ media }}
+<style>
+.modern-form-header {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 25px 30px;
+    margin: -30px -30px 30px -30px;
+    border-radius: 15px 15px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modern-form-header h1 {
+    margin: 0;
+    font-size: 1.8em;
+    font-weight: 600;
+}
+
+.modern-form-header .breadcrumbs {
+    background: rgba(255,255,255,0.1);
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.9em;
+}
+
+.modern-form-header .breadcrumbs a {
+    color: rgba(255,255,255,0.8);
+    text-decoration: none;
+}
+
+.modern-form-header .breadcrumbs a:hover {
+    color: white;
+}
+
+.modern-form-wrapper {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+}
+
+.modern-fieldset {
+    margin-bottom: 30px;
+    border: none;
+    background: #f8f9fa;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.modern-fieldset h2 {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    margin: 0;
+    padding: 15px 20px;
+    font-size: 1.2em;
+    font-weight: 600;
+    border: none;
+}
+
+.modern-fieldset .module {
+    background: white;
+    padding: 25px;
+    border: none;
+    box-shadow: none;
+}
+
+.form-row {
+    margin-bottom: 25px;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-row.field-name {
+    flex-direction: row;
+    align-items: center;
+    gap: 20px;
+}
+
+.form-row label {
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 8px;
+    font-size: 1em;
+}
+
+.form-row input[type="text"], 
+.form-row input[type="email"], 
+.form-row input[type="password"], 
+.form-row input[type="number"], 
+.form-row input[type="url"], 
+.form-row input[type="date"], 
+.form-row input[type="datetime-local"], 
+.form-row input[type="time"], 
+.form-row textarea, 
+.form-row select {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 12px 15px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    background: white;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.form-row input:focus, 
+.form-row textarea:focus, 
+.form-row select:focus {
+    border-color: var(--secondary-color);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    transform: translateY(-2px);
+}
+
+.form-row textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.form-row select {
+    cursor: pointer;
+}
+
+.form-row .help {
+    color: #6c757d;
+    font-size: 0.9em;
+    margin-top: 5px;
+    font-style: italic;
+}
+
+.form-row .errorlist {
+    background: #fff5f5;
+    border: 1px solid #fed7d7;
+    border-radius: 8px;
+    padding: 10px 15px;
+    margin-top: 8px;
+    color: #e53e3e;
+    list-style: none;
+}
+
+.form-row .errorlist li {
+    margin: 0;
+    font-weight: 500;
+}
+
+.checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.checkbox-row:hover {
+    border-color: var(--secondary-color);
+}
+
+.checkbox-row input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+}
+
+.checkbox-row label {
+    margin: 0;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.submit-row {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    padding: 25px 30px;
+    margin: 30px -30px -30px -30px;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.submit-row input[type="submit"], 
+.submit-row button {
+    background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.submit-row input[type="submit"]:hover, 
+.submit-row button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+}
+
+.submit-row .deletelink {
+    background: linear-gradient(135deg, var(--accent-color), #c0392b);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 25px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.submit-row .deletelink:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+    color: white;
+}
+
+.submit-row .default {
+    order: 3;
+}
+
+.submit-row .deletelink {
+    order: 1;
+}
+
+.inline-group {
+    background: white;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+}
+
+.inline-group h2 {
+    background: linear-gradient(135deg, var(--warning-color), #e67e22);
+    color: white;
+    margin: 0;
+    padding: 15px 20px;
+    font-size: 1.1em;
+    font-weight: 600;
+}
+
+.inline-group .tabular {
+    padding: 20px;
+}
+
+.tabular table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.tabular thead th {
+    background: var(--primary-color);
+    color: white;
+    padding: 15px;
+    font-weight: 600;
+    border: none;
+}
+
+.tabular tbody td {
+    padding: 15px;
+    border-bottom: 1px solid #f1f3f4;
+    vertical-align: middle;
+}
+
+.tabular tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.django-ckeditor-widget {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.django-ckeditor-widget:focus-within {
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+/* File upload styling */
+.form-row input[type="file"] {
+    border: 2px dashed #e9ecef;
+    padding: 20px;
+    border-radius: 8px;
+    background: #f8f9fa;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.form-row input[type="file"]:hover {
+    border-color: var(--secondary-color);
+    background: #f1f8ff;
+}
+
+/* Date/time picker enhancements */
+.datetime input {
+    display: inline-block;
+    width: auto;
+    margin-right: 10px;
+}
+
+.calendarbox, .clockbox {
+    background: white;
+    border: 2px solid var(--secondary-color);
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .modern-form-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .form-row.field-name {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .submit-row {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .submit-row input[type="submit"], 
+    .submit-row .deletelink {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content_title %}
+<div class="modern-form-header">
+    <div>
+        <h1>
+            <i class="fas fa-edit"></i>
+            {{ title }}
+        </h1>
+        {% if opts %}
+            <div class="breadcrumbs">
+                <a href="{% url 'admin:index' %}">Home</a>
+                <span> › </span>
+                <a href="{% url cl.opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+                {% if add %}
+                    <span> › Add</span>
+                {% else %}
+                    <span> › Change</span>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <div class="modern-form-wrapper">
+        {% block object-tools %}
+            {% if change and not is_popup %}
+                <ul class="object-tools" style="position: absolute; top: 25px; right: 30px;">
+                    {% block object-tools-items %}
+                        {% change_form_object_tools %}
+                    {% endblock %}
+                </ul>
+            {% endif %}
+        {% endblock %}
+
+        <form {% if has_file_field %}enctype="multipart/form-data" {% endif %}
+              action="{{ form_url }}" method="post" id="{{ opts.model_name }}_form" novalidate>
+            {% csrf_token %}
+            
+            {% if is_popup %}<input type="hidden" name="{{ is_popup_var }}" value="1">{% endif %}
+            {% if to_field %}<input type="hidden" name="{{ to_field_var }}" value="{{ to_field }}">{% endif %}
+            
+            {% if errors %}
+                <div class="alert alert-danger" style="margin: 20px 30px;">
+                    <h4><i class="fas fa-exclamation-triangle"></i> Please correct the errors below.</h4>
+                    {{ adminform.form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            {% block field_sets %}
+                {% for fieldset in adminform %}
+                    {% include "admin/includes/fieldset.html" %}
+                {% endfor %}
+            {% endblock %}
+
+            {% block after_field_sets %}{% endblock %}
+
+            {% block inline_field_sets %}
+                {% for inline_admin_formset in inline_admin_formsets %}
+                    {% include inline_admin_formset.opts.template %}
+                {% endfor %}
+            {% endblock %}
+
+            {% block after_related_objects %}{% endblock %}
+
+            <div class="submit-row">
+                {% block submit_buttons_bottom %}
+                    {% if show_delete_link %}
+                        <a href="{% url opts|admin_urlname:'delete' original.pk|admin_urlquote %}" class="deletelink">
+                            <i class="fas fa-trash"></i>
+                            Delete
+                        </a>
+                    {% endif %}
+                    
+                    {% if show_save_as_new %}
+                        <input type="submit" value="Save as new" class="default" name="_saveasnew">
+                    {% endif %}
+                    
+                    {% if show_save_and_add_another %}
+                        <input type="submit" value="Save and add another" class="default" name="_addanother">
+                    {% endif %}
+                    
+                    {% if show_save_and_continue %}
+                        <input type="submit" value="Save and continue editing" class="default" name="_continue">
+                    {% endif %}
+                    
+                    <input type="submit" value="{% if add %}Add{% else %}Save{% endif %}" class="default" name="_save">
+                {% endblock %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const saveButtons = document.querySelectorAll('input[name="_save"]');
+    saveButtons.forEach(button => {
+        button.style.background = 'linear-gradient(135deg, var(--success-color), #2ecc71)';
+    });
+    
+    const continueButtons = document.querySelectorAll('input[name="_continue"]');
+    continueButtons.forEach(button => {
+        button.style.background = 'linear-gradient(135deg, var(--secondary-color), var(--primary-color))';
+    });
+    
+    const addAnotherButtons = document.querySelectorAll('input[name="_addanother"]');
+    addAnotherButtons.forEach(button => {
+        button.style.background = 'linear-gradient(135deg, var(--warning-color), #e67e22)';
+    });
+    
+    const inputs = document.querySelectorAll('input, textarea, select');
+    inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.style.transform = 'translateY(-1px)';
+        });
+        
+        input.addEventListener('blur', function() {
+            this.parentElement.style.transform = 'translateY(0)';
+        });
+    });
+
+    const textareas = document.querySelectorAll('textarea');
+    textareas.forEach(textarea => {
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+    });
+});
+</script>
+{% endblock %}

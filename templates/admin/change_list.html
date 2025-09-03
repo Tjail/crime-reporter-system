@@ -1,0 +1,382 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static admin_list %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+{{ media }}
+<style>
+.modern-admin-header {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 25px 30px;
+    margin: -30px -30px 30px -30px;
+    border-radius: 15px 15px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modern-admin-header h1 {
+    margin: 0;
+    font-size: 1.8em;
+    font-weight: 600;
+}
+
+.modern-admin-header .add-button {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: 2px solid rgba(255,255,255,0.3);
+}
+
+.modern-admin-header .add-button:hover {
+    background: rgba(255,255,255,0.3);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.modern-filters {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    border-left: 4px solid var(--secondary-color);
+}
+
+.modern-filters h3 {
+    color: var(--primary-color);
+    font-size: 1.2em;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.modern-filters ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.modern-filters li {
+    margin-bottom: 8px;
+}
+
+.modern-filters a {
+    display: block;
+    padding: 8px 15px;
+    background: white;
+    border-radius: 20px;
+    text-decoration: none;
+    color: #6c757d;
+    transition: all 0.3s ease;
+    border: 1px solid #e9ecef;
+}
+
+.modern-filters a:hover, .modern-filters a.selected {
+    background: var(--secondary-color);
+    color: white;
+    transform: translateX(5px);
+}
+
+.modern-search {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.modern-search input[type="text"] {
+    width: 70%;
+    padding: 12px 20px;
+    border: 2px solid #e9ecef;
+    border-radius: 25px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+}
+
+.modern-search input[type="text"]:focus {
+    border-color: var(--secondary-color);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.modern-search button {
+    background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 25px;
+    margin-left: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: transform 0.3s ease;
+}
+
+.modern-search button:hover {
+    transform: translateY(-2px);
+}
+
+.modern-results {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+}
+
+.modern-results table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.modern-results thead th {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 20px 15px;
+    text-align: left;
+    font-weight: 600;
+    border: none;
+    position: relative;
+}
+
+.modern-results thead th a {
+    color: white;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.modern-results thead th a:hover {
+    color: #ecf0f1;
+}
+
+.modern-results tbody tr {
+    border-bottom: 1px solid #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.modern-results tbody tr:hover {
+    background: #f8f9fa;
+    transform: translateX(5px);
+}
+
+.modern-results tbody td {
+    padding: 15px;
+    border: none;
+    vertical-align: middle;
+}
+
+.modern-results tbody td a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.modern-results tbody td a:hover {
+    color: var(--secondary-color);
+}
+
+.modern-actions {
+    background: #f8f9fa;
+    padding: 20px;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.modern-actions select {
+    padding: 10px 15px;
+    border: 2px solid #e9ecef;
+    border-radius: 20px;
+    background: white;
+    min-width: 200px;
+}
+
+.modern-actions button {
+    background: linear-gradient(135deg, var(--warning-color), #e67e22);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.modern-actions button:hover {
+    transform: translateY(-2px);
+}
+
+.modern-pagination {
+    text-align: center;
+    padding: 30px 20px;
+    background: #f8f9fa;
+}
+
+.modern-pagination .paginator a, 
+.modern-pagination .paginator .this-page {
+    display: inline-block;
+    padding: 10px 15px;
+    margin: 0 5px;
+    border-radius: 20px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.modern-pagination .paginator a {
+    background: white;
+    color: var(--primary-color);
+    border: 2px solid #e9ecef;
+}
+
+.modern-pagination .paginator a:hover {
+    background: var(--secondary-color);
+    color: white;
+    border-color: var(--secondary-color);
+    transform: translateY(-2px);
+}
+
+.modern-pagination .paginator .this-page {
+    background: var(--primary-color);
+    color: white;
+    border: 2px solid var(--primary-color);
+}
+
+.object-tools {
+    float: none !important;
+    margin: 0 !important;
+}
+
+.object-tools li {
+    float: none !important;
+    display: inline-block;
+}
+</style>
+{% endblock %}
+
+{% block content_title %}
+<div class="modern-admin-header">
+    <h1>
+        <i class="fas fa-list"></i>
+        {{ title }}
+    </h1>
+    {% if has_add_permission %}
+        <a href="{% url cl.opts|admin_urlname:'add' %}" class="add-button">
+            <i class="fas fa-plus"></i>
+            Add {{ cl.opts.verbose_name|lower }}
+        </a>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="admin-content-wrapper">
+    {% if cl.formset.errors %}
+        <div class="alert alert-danger">
+            <h4>Please correct the errors below.</h4>
+            {{ cl.formset.non_form_errors }}
+        </div>
+    {% endif %}
+
+    {% if cl.formset and cl.result_count %}
+        <div class="modern-actions">
+            <label><i class="fas fa-tasks"></i> Action:</label>
+            <select name="action" required>
+                <option value="" selected>---------</option>
+                {% for choice in action_choices %}
+                    <option value="{{ choice.0 }}">{{ choice.1 }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" title="Run the selected action">
+                <i class="fas fa-play"></i> Go
+            </button>
+            <span class="action-counter" data-actions-icnt="{{ cl.result_count }}">0 of {{ cl.result_count }} selected</span>
+        </div>
+    {% endif %}
+
+    <div class="module filtered" id="changelist">
+        {% if cl.has_filters %}
+            <div id="changelist-filter">
+                <div class="modern-filters">
+                    <h3><i class="fas fa-filter"></i> Filters</h3>
+                    {% for spec in cl.filter_specs %}
+                        {% admin_list_filter cl spec %}
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        <div id="changelist-content">
+            {% if cl.formset %}
+                <form id="changelist-form" method="post" novalidate>
+                    {% csrf_token %}
+                    {% if cl.formset.errors %}
+                        <div class="alert alert-danger">
+                            {{ cl.formset.non_form_errors }}
+                        </div>
+                    {% endif %}
+            {% endif %}
+
+            {% if cl.search_fields %}
+                <div class="modern-search">
+                    <label for="searchbar"><i class="fas fa-search"></i></label>
+                    <input type="text" size="40" name="{{ search_var }}" value="{{ cl.query }}" id="searchbar" autofocus placeholder="Search {{ cl.opts.verbose_name_plural|lower }}...">
+                    <button type="submit">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                    {% if cl.query %}
+                        <a href="?" style="margin-left: 10px; color: var(--accent-color);">
+                            <i class="fas fa-times"></i> Clear
+                        </a>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            <div class="modern-results">
+                {% result_list cl %}
+            </div>
+
+            {% if cl.formset %}
+                </form>
+            {% endif %}
+
+            {% if cl.result_count %}
+                <div class="modern-pagination">
+                    {% pagination cl %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tableRows = document.querySelectorAll('.modern-results tbody tr');
+    tableRows.forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.style.boxShadow = '0 3px 10px rgba(0,0,0,0.1)';
+        });
+        
+        row.addEventListener('mouseleave', function() {
+            this.style.boxShadow = 'none';
+        });
+    });
+
+    const searchInput = document.getElementById('searchbar');
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                this.form.submit();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

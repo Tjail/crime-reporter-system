@@ -21,9 +21,10 @@ from landing.views import custom_redirect
 from django.conf import settings
 from django.conf.urls.static import static
 from social.views import AccountTypeSignupView
+from social.admin import admin_site
 
 urlpatterns = [
-    path('admin-go-hideandseek/', admin.site.urls),
+    path('admin-go-hideandseek/', admin_site.urls),
     path('', include('landing.urls')),
     path('accounts/signup/', AccountTypeSignupView.as_view(), name='account_type_signup'),
     path('accounts/', include('allauth.urls')),

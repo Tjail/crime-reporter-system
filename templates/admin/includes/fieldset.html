@@ -1,0 +1,112 @@
+<fieldset class="modern-fieldset module aligned {{ fieldset.classes }}">
+    {% if fieldset.name %}
+        <h2>{{ fieldset.name }}</h2>
+    {% endif %}
+    
+    {% if fieldset.description %}
+        <div class="description">{{ fieldset.description|safe }}</div>
+    {% endif %}
+    
+    <div class="module">
+        {% for line in fieldset %}
+            <div class="form-row{% if line.fields|length_is:'1' and line.errors %} errors{% endif %}{% if not line.has_visible_field %} hidden{% endif %}{% for field in line %} field-{{ field.field.name }}{% endfor %}">
+                
+                {% if line.fields|length_is:'1' %}
+                    {% for field in line %}
+                        <div class="field-wrapper">
+                            {% if field.is_checkbox %}
+                                <div class="checkbox-row">
+                                    {{ field.field }}
+                                    <label for="{{ field.field.id_for_label }}" class="vCheckboxLabel">{{ field.field.label }}</label>
+                                </div>
+                            {% else %}
+                                {% if field.field.label %}
+                                    <label for="{{ field.field.id_for_label }}" class="required">
+                                        {{ field.field.label }}{% if field.field.field.required %}<span class="required-indicator"> *</span>{% endif %}:
+                                    </label>
+                                {% endif %}
+                                {{ field.field }}
+                            {% endif %}
+                            
+                            {% if field.field.help_text %}
+                                <div class="help">{{ field.field.help_text|safe }}</div>
+                            {% endif %}
+                            
+                            {{ field.errors }}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <!-- Multiple fields in one row -->
+                    <div class="field-row-multiple">
+                        {% for field in line %}
+                            <div class="field-column">
+                                {% if field.is_checkbox %}
+                                    <div class="checkbox-row">
+                                        {{ field.field }}
+                                        <label for="{{ field.field.id_for_label }}" class="vCheckboxLabel">{{ field.field.label }}</label>
+                                    </div>
+                                {% else %}
+                                    {% if field.field.label %}
+                                        <label for="{{ field.field.id_for_label }}" class="required">
+                                            {{ field.field.label }}{% if field.field.field.required %}<span class="required-indicator"> *</span>{% endif %}:
+                                        </label>
+                                    {% endif %}
+                                    {{ field.field }}
+                                {% endif %}
+                                
+                                {% if field.field.help_text %}
+                                    <div class="help">{{ field.field.help_text|safe }}</div>
+                                {% endif %}
+                                
+                                {{ field.errors }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+</fieldset>
+
+<style>
+.field-wrapper {
+    margin-bottom: 20px;
+}
+
+.field-row-multiple {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.field-column {
+    flex: 1;
+    min-width: 200px;
+}
+
+.required-indicator {
+    color: var(--accent-color);
+    font-weight: bold;
+}
+
+.description {
+    background: #e3f2fd;
+    border-left: 4px solid var(--secondary-color);
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    border-radius: 0 8px 8px 0;
+    color: var(--primary-color);
+    font-style: italic;
+}
+
+@media (max-width: 768px) {
+    .field-row-multiple {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .field-column {
+        min-width: unset;
+    }
+}
+</style>

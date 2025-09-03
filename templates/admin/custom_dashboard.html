@@ -1,0 +1,202 @@
+<!--This file is templates/admin/custom_dashboard.html-->
+{% extends 'admin/base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h1 class="page-title">
+    <i class="fas fa-tachometer-alt me-3"></i>
+    Administrative Dashboard
+</h1>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="stats-card text-center">
+            <i class="fas fa-user-clock mb-3"></i>
+            <h2 class="mb-2">{{ stats.pending_verifications }}</h2>
+            <p class="mb-0">Pending Verifications</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card text-center">
+            <i class="fas fa-file-alt mb-3"></i>
+            <h2 class="mb-2">{{ stats.total_reports }}</h2>
+            <p class="mb-0">Total Reports</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card text-center">
+            <i class="fas fa-users mb-3"></i>
+            <h2 class="mb-2">{{ stats.total_users }}</h2>
+            <p class="mb-0">Total Users</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card text-center">
+            <i class="fas fa-shield-alt mb-3"></i>
+            <h2 class="mb-2">{{ stats.verified_police }}</h2>
+            <p class="mb-0">Verified Police</p>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Verification Requests -->
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-user-check me-2"></i>
+                    Recent Verification Requests
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if recent_verifications %}
+                    {% for verification in recent_verifications %}
+                        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                            <div>
+                                <strong>{{ verification.user.username }}</strong>
+                                <br>
+                                <small class="text-muted">{{ verification.get_account_type_display }}</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge 
+                                    {% if verification.status == 'PENDING' %}bg-warning
+                                    {% elif verification.status == 'APPROVED' %}bg-success
+                                    {% elif verification.status == 'REJECTED' %}bg-danger
+                                    {% endif %}">
+                                    {{ verification.get_status_display }}
+                                </span>
+                                <br>
+                                <small class="text-muted">{{ verification.submitted_at|date:"M d, H:i" }}</small>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No verification requests found.</p>
+                {% endif %}
+                <div class="text-center mt-3">
+                    <a href="{% url 'admin_verification_management' %}" class="btn btn-primary">
+                        View All Verifications
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Crime Reports -->
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Recent Crime Reports
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if recent_reports %}
+                    {% for report in recent_reports %}
+                        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                            <div>
+                                <strong>Report #{{ report.id }}</strong>
+                                <br>
+                                <small class="text-muted">{{ report.location_city }}, {{ report.location_province }}</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge 
+                                    {% if report.investigation_status == 'REPORTED' %}bg-secondary
+                                    {% elif report.investigation_status == 'UNDER_INVESTIGATION' %}bg-warning
+                                    {% elif report.investigation_status == 'INVESTIGATED' %}bg-success
+                                    {% elif report.investigation_status == 'CLOSED' %}bg-info
+                                    {% endif %}">
+                                    {{ report.get_investigation_status_display }}
+                                </span>
+                                <br>
+                                <small class="text-muted">{{ report.created_on|date:"M d, H:i" }}</small>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No crime reports found.</p>
+                {% endif %}
+                <div class="text-center mt-3">
+                    <a href="{% url 'admin_reports_management' %}" class="btn btn-danger">
+                        View All Reports
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Crime Statistics Chart -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Crime Type Statistics
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="crimeStatsChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Crime Statistics Chart
+const ctx = document.getElementById('crimeStatsChart').getContext('2d');
+const crimeStatsChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: [
+            {% for crime_type in crime_stats %}
+                '{{ crime_type.name }}',
+            {% endfor %}
+        ],
+        datasets: [{
+            label: 'Number of Reports',
+            data: [
+                {% for crime_type in crime_stats %}
+                    {{ crime_type.report_count }},
+                {% endfor %}
+            ],
+            backgroundColor: [
+                'rgba(52, 152, 219, 0.8)',
+                'rgba(231, 76, 60, 0.8)',
+                'rgba(46, 204, 113, 0.8)',
+                'rgba(155, 89, 182, 0.8)',
+                'rgba(243, 156, 18, 0.8)',
+            ],
+            borderColor: [
+                'rgba(52, 152, 219, 1)',
+                'rgba(231, 76, 60, 1)',
+                'rgba(46, 204, 113, 1)',
+                'rgba(155, 89, 182, 1)',
+                'rgba(243, 156, 18, 1)',
+            ],
+            borderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

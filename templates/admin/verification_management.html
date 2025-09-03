@@ -1,0 +1,130 @@
+<!-- this file is templates/admin/verification_management.html -->
+{% extends 'admin/base.html' %}
+
+{% block title %}Verification Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="page-title">
+        <i class="fas fa-user-check me-3"></i>
+        Verification Management
+    </h1>
+    
+    <!-- Filters -->
+    <form method="get" class="d-flex gap-2">
+        <select name="status" class="form-select" onchange="this.form.submit()">
+            <option value="">All Status</option>
+            {% for key, value in status_choices %}
+                <option value="{{ key }}" {% if key == status_filter %}selected{% endif %}>
+                    {{ value }}
+                </option>
+            {% endfor %}
+        </select>
+        
+        <select name="account_type" class="form-select" onchange="this.form.submit()">
+            <option value="">All Types</option>
+            {% for key, value in account_choices %}
+                <option value="{{ key }}" {% if key == account_filter %}selected{% endif %}>
+                    {{ value }}
+                </option>
+            {% endfor %}
+        </select>
+    </form>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Account Type</th>
+                        <th>Status</th>
+                        <th>Submitted</th>
+                        <th>Documents</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for verification in page_obj %}
+                        <tr>
+                            <td>
+                                <strong>{{ verification.user.username }}</strong>
+                                <br>
+                                <small class="text-muted">{{ verification.user.email }}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-info">
+                                    {{ verification.get_account_type_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge 
+                                    {% if verification.status == 'PENDING' %}bg-warning
+                                    {% elif verification.status == 'APPROVED' %}bg-success
+                                    {% elif verification.status == 'REJECTED' %}bg-danger
+                                    {% elif verification.status == 'MORE_INFO' %}bg-info
+                                    {% endif %}">
+                                    {{ verification.get_status_display }}
+                                </span>
+                            </td>
+                            <td>{{ verification.submitted_at|date:"M d, Y H:i" }}</td>
+                            <td>
+                                {% if verification.id_document %}
+                                    <a href="{{ verification.id_document.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-file-alt"></i> ID
+                                    </a>
+                                {% endif %}
+                                {% if verification.proof_document %}
+                                    <a href="{{ verification.proof_document.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-file-alt"></i> Proof
+                                    </a>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'admin_verification_detail' verification.pk %}" 
+                                   class="btn btn-sm btn-primary">
+                                    <i class="fas fa-eye"></i> Review
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4">
+                                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">No verification requests found.</p>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
