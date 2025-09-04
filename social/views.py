@@ -340,7 +340,7 @@ class PostListView(LoginRequiredMixin, View):
         identifier_formset = IdentifierFormSet(request.POST)
         posts = Post.objects.all().order_by('-created_on')
 
-        if form.is_valid():
+        if form.is_valid() and identifier_formset.is_valid():
             new_post = form.save(commit=False)
             new_post.author = request.user
             new_post.save()
@@ -348,14 +348,23 @@ class PostListView(LoginRequiredMixin, View):
             new_post.create_tags()
 
             for identifier_form in identifier_formset:
-                if identifier_form.cleaned_data and not identifier_form.cleaned_data.get('DELETE', False):
-                    Identifier.objects.create(
-                        post=new_post,
-                        identifier_type=identifier_form.cleaned_data['identifier_type'],
-                        value=identifier_form.cleaned_data['value']
-                    )
+                if identifier_form.is_valid() and identifier_form.cleaned_data:
+                    # Check if form should be deleted
+                    if identifier_form.cleaned_data.get('DELETE', False):
+                        continue
+                    
+                    # Only create identifier if both fields have values
+                    identifier_type = identifier_form.cleaned_data.get('identifier_type')
+                    identifier_value = identifier_form.cleaned_data.get('value')
+                    
+                    if identifier_type and identifier_value:
+                        Identifier.objects.create(
+                            post=new_post,
+                            identifier_type=identifier_type,
+                            value=identifier_value
+                        )
 
-            return redirect('post_list')
+        return redirect('post_list')
 
         context = {
             'post_list': posts,
